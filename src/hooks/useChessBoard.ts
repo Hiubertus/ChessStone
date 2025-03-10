@@ -1,6 +1,7 @@
-import {BoardState} from "@/types/BoardState.ts";
-import {useState} from "react";
-import {ChessPiece} from "@/types/ChessPiece.ts";
+import { useState } from "react";
+import { BoardState } from "@/types/BoardState";
+import { ChessPiece } from "@/types/ChessPiece";
+import { INITIAL_POSITIONS } from "@/constants/constants.ts";
 
 export const useChessBoard = () => {
     const initialPieces = initializeBoard();
@@ -31,45 +32,54 @@ export const useChessBoard = () => {
     return { boardState, setBoardState };
 };
 
+// Function to create the initial chess board setup
 export const initializeBoard = (): (ChessPiece | null)[][] => {
-    // Tworzenie pustej szachownicy 8x8
+    // Create empty 8x8 board
     const board: (ChessPiece | null)[][] = Array(8).fill(null)
         .map(() => Array(8).fill(null));
 
-    // Funkcja do generacji ID figury
+    // Generate a unique ID for each piece
     const generateId = (type: ChessPiece['type'], color: ChessPiece['color'], index: number) =>
         `${color}_${type}_${index}`;
 
-    // Ustawienie figur na szachownicy
-    // Czarne figury (górny rząd)
-    board[0][0] = { id: generateId('rook', 'black', 1), type: 'rook', color: 'black' };
-    board[0][1] = { id: generateId('knight', 'black', 1), type: 'knight', color: 'black' };
-    board[0][2] = { id: generateId('bishop', 'black', 1), type: 'bishop', color: 'black' };
-    board[0][3] = { id: generateId('queen', 'black', 1), type: 'queen', color: 'black' };
-    board[0][4] = { id: generateId('king', 'black', 1), type: 'king', color: 'black' };
-    board[0][5] = { id: generateId('bishop', 'black', 2), type: 'bishop', color: 'black' };
-    board[0][6] = { id: generateId('knight', 'black', 2), type: 'knight', color: 'black' };
-    board[0][7] = { id: generateId('rook', 'black', 2), type: 'rook', color: 'black' };
+    // Set up back row pieces using the constants
+    const backRow = INITIAL_POSITIONS.BACK_ROW;
 
-    // Czarne pionki
+    // Place black pieces (top row)
     for (let i = 0; i < 8; i++) {
-        board[1][i] = { id: generateId('pawn', 'black', i + 1), type: 'pawn', color: 'black' };
+        board[0][i] = {
+            id: generateId(backRow[i], 'black', Math.floor(i/2) + 1),
+            type: backRow[i],
+            color: 'black'
+        };
     }
 
-    // Białe pionki
+    // Place black pawns
     for (let i = 0; i < 8; i++) {
-        board[6][i] = { id: generateId('pawn', 'white', i + 1), type: 'pawn', color: 'white' };
+        board[1][i] = {
+            id: generateId('pawn', 'black', i + 1),
+            type: 'pawn',
+            color: 'black'
+        };
     }
 
-    // Białe figury (dolny rząd)
-    board[7][0] = { id: generateId('rook', 'white', 1), type: 'rook', color: 'white' };
-    board[7][1] = { id: generateId('knight', 'white', 1), type: 'knight', color: 'white' };
-    board[7][2] = { id: generateId('bishop', 'white', 1), type: 'bishop', color: 'white' };
-    board[7][3] = { id: generateId('queen', 'white', 1), type: 'queen', color: 'white' };
-    board[7][4] = { id: generateId('king', 'white', 1), type: 'king', color: 'white' };
-    board[7][5] = { id: generateId('bishop', 'white', 2), type: 'bishop', color: 'white' };
-    board[7][6] = { id: generateId('knight', 'white', 2), type: 'knight', color: 'white' };
-    board[7][7] = { id: generateId('rook', 'white', 2), type: 'rook', color: 'white' };
+    // Place white pawns
+    for (let i = 0; i < 8; i++) {
+        board[6][i] = {
+            id: generateId('pawn', 'white', i + 1),
+            type: 'pawn',
+            color: 'white'
+        };
+    }
+
+    // Place white pieces (bottom row)
+    for (let i = 0; i < 8; i++) {
+        board[7][i] = {
+            id: generateId(backRow[i], 'white', Math.floor(i/2) + 1),
+            type: backRow[i],
+            color: 'white'
+        };
+    }
 
     return board;
 };

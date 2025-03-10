@@ -1,11 +1,10 @@
 import { Tile } from './Tile';
 import { PawnPromotion } from "@/components/Piece/PawnPromotion";
 import './Board.scss';
-import {useChessBoard} from "@/hooks/useChessBoard.ts";
-import {useChessLogic} from "@/hooks/useChessLogic.ts";
+import { useChessBoard } from "@/hooks/useChessBoard";
+import { useChessLogic } from "@/hooks/useChessLogic";
 
 export const Board = () => {
-    // Inicjalizacja stanu gry i pobranie logiki szachów
     const { boardState, setBoardState } = useChessBoard();
     const {
         handleTileClick,
@@ -13,12 +12,12 @@ export const Board = () => {
         isMoveInPossibleMoves
     } = useChessLogic(boardState, setBoardState);
 
-    // Renderowanie szachownicy
     return (
         <div>
             <div className="chess-board">
                 {Array(8).fill(null).map((_, y) => (
                     Array(8).fill(null).map((_, x) => {
+                        // Determine tile properties
                         const isLight = (x + y) % 2 === 0;
                         const piece = boardState.pieces[y][x];
                         const isSelected = boardState.selectedTile !== null &&
@@ -45,7 +44,7 @@ export const Board = () => {
                 ))}
             </div>
 
-            {/* Pawn Promotion Portal */}
+            {/* Pawn Promotion Dialog */}
             {boardState.promotion.active && boardState.promotion.position && boardState.promotion.color && (
                 <PawnPromotion
                     position={boardState.promotion.position}
