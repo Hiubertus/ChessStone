@@ -1,4 +1,3 @@
-// Tile.tsx - Updated with new move indicators
 import { Piece } from '../Piece/Piece';
 import { ChessTile } from '@/types/ChessTile';
 import './Tile.scss';
@@ -10,15 +9,18 @@ export const Tile = ({
                          isSelected,
                          isPossibleMove,
                          isCheck = false,
+                         isLastMoveFrom = false,
+                         isLastMoveTo = false,
                          onClick
                      }: ChessTile) => {
     const algebraicNotation = `${String.fromCharCode(97 + position.x)}${8 - position.y}`;
 
-    // Generate class names
     const tileClasses = [
         'tile',
         isLight ? 'tile--light' : 'tile--dark',
         isSelected ? 'tile--selected' : '',
+        isLastMoveFrom ? 'tile--last-move-from' : '',
+        isLastMoveTo ? 'tile--last-move-to' : '',
         isCheck ? 'tile--check' : ''
     ].filter(Boolean).join(' ');
 
@@ -33,12 +35,8 @@ export const Tile = ({
         );
     };
 
-    // Render move indicator (circle for empty tiles, ring for captures)
     const renderMoveIndicator = () => {
         if (!isPossibleMove) return null;
-
-        // For empty tiles: show a circle
-        // For tiles with pieces: show a ring around the piece
         const indicatorClass = piece
             ? 'tile__move-indicator tile__move-indicator--capture'
             : 'tile__move-indicator tile__move-indicator--move';
@@ -54,7 +52,6 @@ export const Tile = ({
             onClick={onClick}
             data-position={algebraicNotation}
         >
-            {/* Algebraic notation */}
             {showNotation && (
                 <>
                     {position.y === 7 && (

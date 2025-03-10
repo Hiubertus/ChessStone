@@ -25,6 +25,26 @@
     }
   }
 
+  &--last-move-from {
+    &.tile--light {
+      background-color: #cdd26a;
+    }
+
+    &.tile--dark {
+      background-color: #aaa23a;
+    }
+  }
+
+  &--last-move-to {
+    &.tile--light {
+      background-color: #f7ec5e;
+    }
+
+    &.tile--dark {
+      background-color: #ccc145;
+    }
+  }
+
   &--check {
     &.tile--light {
       background-color: #f8696b;

@@ -73,6 +73,10 @@ export const useChessLogic = (
             checkmate,
             enPassantTarget: null,
             moveHistory: [...boardState.moveHistory, moveRecord],
+            lastMove: {
+                from: from,
+                to: to
+            },
             promotion: {
                 active: false,
                 position: null,
@@ -229,6 +233,10 @@ export const useChessLogic = (
             checkmate,
             enPassantTarget: newEnPassantTarget,
             moveHistory: [...boardState.moveHistory, moveRecord],
+            lastMove: {
+                from: { x: fromX, y: fromY },
+                to: { x: toX, y: toY }
+            },
             promotion: {
                 active: false,
                 position: null,

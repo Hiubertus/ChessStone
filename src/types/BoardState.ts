@@ -17,6 +17,10 @@ export type BoardState = {
         from: { x: number, y: number };
         to: { x: number, y: number };
     }[];
+    lastMove: {
+        from: { x: number, y: number } | null;
+        to: { x: number, y: number } | null;
+    };
     promotion: {
         active: boolean;
         position: { x: number, y: number } | null;

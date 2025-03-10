@@ -18,6 +18,10 @@ export const useChessBoard = () => {
         checkmate: null,
         enPassantTarget: null,
         moveHistory: [],
+        lastMove: {
+            from: null,
+            to: null
+        },
         promotion: {
             active: false,
             position: null,

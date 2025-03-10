@@ -10,5 +10,7 @@ export type ChessTile = {
     isSelected: boolean;
     isPossibleMove: boolean;
     isCheck?: boolean;
+    isLastMoveFrom?: boolean;
+    isLastMoveTo?: boolean;
     onClick: () => void;
 }
