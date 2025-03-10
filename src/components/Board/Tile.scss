@@ -25,16 +25,6 @@
     }
   }
 
-  &--possible-move {
-    &.tile--light {
-      background-color: #f7f769;
-    }
-
-    &.tile--dark {
-      background-color: #bbbd2f;
-    }
-  }
-
   &--check {
     &.tile--light {
       background-color: #f8696b;
@@ -65,6 +55,33 @@
 
     .tile--dark & {
       color: #f0d9b5;
+    }
+  }
+
+  &__move-indicator {
+    position: absolute;
+    z-index: 1;
+
+    &--move {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.15);
+
+      .tile--dark & {
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+    }
+
+    &--capture {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      border: 3px solid rgba(0, 0, 0, 0.3);
+
+      .tile--dark & {
+        border-color: rgba(255, 255, 255, 0.3);
+      }
     }
   }
 }
