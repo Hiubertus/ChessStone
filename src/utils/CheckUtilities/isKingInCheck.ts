@@ -10,7 +10,6 @@ export const isKingInCheck = (
 ): boolean => {
     const opponentColor = kingColor === 'white' ? 'black' : 'white';
 
-    // Check for pawn attacks
     const pawnDirection = kingColor === 'white' ? -1 : 1;
     for (const dx of [-1, 1]) {
         const checkX = kingX + dx;
@@ -24,7 +23,6 @@ export const isKingInCheck = (
         }
     }
 
-    // Check for knight attacks
     for (const move of DIRECTION.KNIGHT) {
         const checkX = kingX + move.dx;
         const checkY = kingY + move.dy;
@@ -37,7 +35,6 @@ export const isKingInCheck = (
         }
     }
 
-    // Check for attacks along lines (rook, bishop, queen)
     for (const dir of CHECK_DIRECTIONS) {
         let checkX = kingX + dir.dx;
         let checkY = kingY + dir.dy;
@@ -49,7 +46,7 @@ export const isKingInCheck = (
                 if (piece.color === opponentColor && dir.pieces.includes(piece.type)) {
                     return true;
                 }
-                break; // Stop after encountering any piece
+                break;
             }
 
             checkX += dir.dx;
@@ -57,7 +54,6 @@ export const isKingInCheck = (
         }
     }
 
-    // Check for king proximity (kings can't be adjacent)
     for (const dir of DIRECTION.KING) {
         const checkX = kingX + dir.dx;
         const checkY = kingY + dir.dy;

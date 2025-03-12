@@ -1,7 +1,8 @@
 import { createPortal } from 'react-dom';
 import { Button } from '@/components/ui/button';
 import { ChessPiece } from '@/types/ChessPiece';
-import './PawnPromotiom.scss';
+import "./PawnPromotiom.scss"
+import {CSSProperties} from "react";
 
 type PromotionProps = {
     position: { x: number, y: number };
@@ -20,74 +21,64 @@ export const PawnPromotion = ({ position, color, onPromote, isOpen, tileRef }: P
         onPromote(pieceType);
     };
 
-    // Calculate position styles
     const getPortalStyles = () => {
-        const promotionWidth = 240; // 4 pieces * 60px width
+        const promotionWidth = 176;
+        const promotionHeight = 64;
 
-        // If we have a tile reference, use its actual position
         if (tileRef) {
             const tileRect = tileRef.getBoundingClientRect();
-            const boardRect = tileRef.closest('.chess-board')?.getBoundingClientRect() || { left: 0, top: 0 };
 
-            // Calculate relative position to the board
-            const relLeft = tileRect.left - boardRect.left;
-            const relTop = tileRect.top - boardRect.top;
-
-            // Center the portal over the tile
-            const leftPos = relLeft + (tileRect.width / 2) - (promotionWidth / 2);
-
-            // Position above or below based on pawn's location
-            const isTopHalf = position.y < 4;
-            const topPos = isTopHalf
-                ? relTop + tileRect.height // Below the pawn
-                : relTop - 76; // Above the pawn (76px is the height of the promotion panel)
+            const isBlackPiece = color === 'black';
 
             return {
-                position: 'absolute',
-                left: `${leftPos}px`,
-                top: `${topPos}px`,
-                zIndex: 100,
+                position: 'fixed',  // Use fixed positioning relative to viewport
+                left: `${tileRect.left + (tileRect.width / 2) - (promotionWidth / 2)}px`,
+                top: isBlackPiece ? `${tileRect.bottom}px` : `${tileRect.top - promotionHeight}px`,
+                zIndex: 1000,
             };
         } else {
-            // Fallback to position calculation if no tile reference
-            const tileSize = 60; // Size of a chess tile in pixels
+            const chessBoard = document.querySelector('.chess-board');
+            if (!chessBoard) {
+                return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
+            }
 
-            // Center the portal over the pawn
-            const boardLeftPosition = (position.x * tileSize) - (promotionWidth / 2) + (tileSize / 2);
+            const boardRect = chessBoard.getBoundingClientRect();
+            const tileSize = boardRect.width / 8; // Assuming square board with 8 tiles
 
-            // Position above or below based on pawn's location
-            const isTopHalf = position.y < 4;
-            const topPosition = isTopHalf
-                ? (position.y + 1) * tileSize // Below the pawn
-                : position.y * tileSize - 76; // Above the pawn
+            const leftPos = boardRect.left + (position.x * tileSize) + (tileSize / 2) - (promotionWidth / 2);
+
+            const isBlackPiece = color === 'black';
+            const topPos = isBlackPiece
+                ? boardRect.top + ((position.y + 1) * tileSize)
+                : boardRect.top + (position.y * tileSize) - promotionHeight;
 
             return {
-                position: 'absolute',
-                left: `${boardLeftPosition}px`,
-                top: `${topPosition}px`,
-                zIndex: 100,
+                position: 'fixed',
+                left: `${leftPos}px`,
+                top: `${topPos}px`,
+                zIndex: 1000,
             };
         }
     };
 
-    // Create the portal content
+
     const promotionPortal = (
         <div
             className="promotion-portal"
-            style={getPortalStyles() as React.CSSProperties}
+            style={getPortalStyles() as CSSProperties}
         >
             <div className="bg-white rounded-md shadow-lg p-2 flex gap-2">
                 {promotionPieces.map((pieceType) => (
                     <Button
                         key={pieceType}
                         variant="outline"
-                        className="w-12 h-12 p-0"
+                        className="w-10 h-10 p-0"
                         onClick={() => handlePromote(pieceType)}
                     >
                         <img
                             src={`/${color}-${pieceType}.png`}
                             alt={`${color} ${pieceType}`}
-                            className="w-10 h-10"
+                            className="w-8 h-8"
                         />
                     </Button>
                 ))}
@@ -95,7 +86,6 @@ export const PawnPromotion = ({ position, color, onPromote, isOpen, tileRef }: P
         </div>
     );
 
-    // Get portal container or create it if it doesn't exist
     let portalContainer = document.getElementById('promotion-portal');
     if (!portalContainer) {
         portalContainer = document.createElement('div');

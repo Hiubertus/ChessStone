@@ -9,7 +9,6 @@ export const getCheckStatus = (
     currentPlayer: 'white' | 'black',
     boardState: BoardState
 ): { check: 'white' | 'black' | null, checkmate: 'white' | 'black' | null } => {
-    // Check if either king is in check
     const whiteInCheck = isKingInCheck(kings.white.x, kings.white.y, 'white', pieces);
     const blackInCheck = isKingInCheck(kings.black.x, kings.black.y, 'black', pieces);
 
@@ -17,7 +16,6 @@ export const getCheckStatus = (
     if (whiteInCheck) check = 'white';
     if (blackInCheck) check = 'black';
 
-    // Check for checkmate
     let checkmate: 'white' | 'black' | null = null;
     if (check) {
         const hasLegalMoves = playerHasLegalMoves(check, pieces, {

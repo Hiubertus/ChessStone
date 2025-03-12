@@ -31,7 +31,7 @@ export const calculatePossibleMoves = (
         case 'queen':
             return calculateQueenMoves(x, y, pieces, color);
         case 'king':
-            return calculateKingMoves(x, y, pieces, color);
+            return calculateKingMoves(x, y, pieces, color, boardState);
         default:
             return [];
     }

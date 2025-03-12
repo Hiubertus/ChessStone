@@ -19,15 +19,11 @@ export const getMovesInDirection = (
             const targetPiece = pieces[newY][newX];
 
             if (!targetPiece) {
-                // Empty square - add and continue
                 moves.push({ x: newX, y: newY });
             } else {
-                // Square has a piece
                 if (targetPiece.color !== pieceColor) {
-                    // Can capture opponent's piece
                     moves.push({ x: newX, y: newY });
                 }
-                // Stop in this direction after encountering any piece
                 break;
             }
 

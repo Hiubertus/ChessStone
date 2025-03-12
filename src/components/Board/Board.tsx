@@ -17,7 +17,6 @@ export const Board = () => {
             <div className="chess-board">
                 {Array(8).fill(null).map((_, y) => (
                     Array(8).fill(null).map((_, x) => {
-                        // Determine tile properties
                         const isLight = (x + y) % 2 === 0;
                         const piece = boardState.pieces[y][x];
                         const isSelected = boardState.selectedTile !== null &&
@@ -28,7 +27,6 @@ export const Board = () => {
                             boardState.kings[boardState.check].x === x &&
                             boardState.kings[boardState.check].y === y;
 
-                        // Check if this square was part of the last move
                         const isLastMoveFrom = boardState.lastMove.from !== null &&
                             boardState.lastMove.from.x === x &&
                             boardState.lastMove.from.y === y;
@@ -55,7 +53,6 @@ export const Board = () => {
                 ))}
             </div>
 
-            {/* Pawn Promotion Dialog */}
             {boardState.promotion.active && boardState.promotion.position && boardState.promotion.color && (
                 <PawnPromotion
                     position={boardState.promotion.position}

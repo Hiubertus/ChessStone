@@ -5,8 +5,6 @@
   flex-direction: row;
   align-items: center;
   justify-content: center;
-
-  // Add transition for smoother appearance
   animation: fadeIn 0.2s ease-in-out;
 
   @keyframes fadeIn {
