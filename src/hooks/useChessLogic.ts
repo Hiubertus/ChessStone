@@ -1,15 +1,16 @@
-
 import { Dispatch, SetStateAction } from "react";
 import { ChessPiece } from "@/types/ChessPiece";
 import { BoardState } from "@/types/BoardState";
-import {clonePieces} from "@/utils/BoardUtilities/clonePieces.ts";
-import {getCheckStatus} from "@/utils/CheckUtilities/getCheckStatus.ts";
-import {getNextPlayer} from "@/utils/BoardUtilities/getNextPlayer.ts";
-import {calculateLegalMoves} from "@/utils/CheckUtilities/calculateLegalMoves.ts";
-import {isMoveInPossibleMoves} from "@/utils/BoardUtilities/isMoveInPossibleMoves.ts";
-import {shouldPromotePawn} from "@/utils/BoardUtilities/shouldPromotePawn.ts";
-import {Piece} from "@/enums/Piece.ts";
-import {Color} from "@/enums/Color.ts";
+import { clonePieces } from "@/utils/BoardUtilities/clonePieces.ts";
+import { getCheckStatus } from "@/utils/CheckUtilities/getCheckStatus.ts";
+import { getNextPlayer } from "@/utils/BoardUtilities/getNextPlayer.ts";
+import { calculateLegalMoves } from "@/utils/CheckUtilities/calculateLegalMoves.ts";
+import { isMoveInPossibleMoves } from "@/utils/BoardUtilities/isMoveInPossibleMoves.ts";
+import { shouldPromotePawn } from "@/utils/BoardUtilities/shouldPromotePawn.ts";
+import { getEnPassantTarget } from "@/utils/MoveUtilities/getEnPassantTarget.ts";
+import { handleCastling} from "@/utils/MoveHandlers/handleCastling.ts";
+import { handleEnPassant} from "@/utils/MoveHandlers/handleEnPassant.ts";
+import { Piece } from "@/enums/Piece.ts";
 
 export const useChessLogic = (
     boardState: BoardState,
@@ -36,17 +37,6 @@ export const useChessLogic = (
 
         const nextPlayer = getNextPlayer(currentPlayer);
 
-        const { check, checkmate } = getCheckStatus(
-            newPieces,
-            kings,
-            nextPlayer,
-            {
-                ...boardState,
-                pieces: newPieces,
-                currentPlayer: nextPlayer
-            }
-        );
-
         const moveRecord = {
             piece: {
                 id,
@@ -58,6 +48,20 @@ export const useChessLogic = (
             to
         };
 
+        const newMoveHistory = [...boardState.moveHistory, moveRecord];
+
+        const { check, checkmate } = getCheckStatus(
+            newPieces,
+            kings,
+            nextPlayer,
+            {
+                ...boardState,
+                pieces: newPieces,
+                currentPlayer: nextPlayer,
+                moveHistory: newMoveHistory
+            }
+        );
+
         setBoardState({
             ...boardState,
             pieces: newPieces,
@@ -66,8 +70,7 @@ export const useChessLogic = (
             currentPlayer: nextPlayer,
             check,
             checkmate,
-            enPassantTarget: null,
-            moveHistory: [...boardState.moveHistory, moveRecord],
+            moveHistory: newMoveHistory,
             lastMove: {
                 from: from,
                 to: to
@@ -122,87 +125,71 @@ export const useChessLogic = (
     };
 
     const executeMove = (fromX: number, fromY: number, toX: number, toY: number) => {
-        const { pieces, currentPlayer, kings, enPassantTarget } = boardState;
+        const { pieces, currentPlayer, kings } = boardState;
         const movingPiece = pieces[fromY][fromX]!;
-        const isKingMove = movingPiece.type === Piece.King;
-        const isPawnMove = movingPiece.type === Piece.Pawn;
 
-        if (isPawnMove && shouldPromotePawn(movingPiece, toY)) {
-            const tileElement = document.querySelector(
-                `[data-position="${String.fromCharCode(97 + toX)}${8 - toY}"]`
-            ) as HTMLElement;
-
-            setBoardState({
-                ...boardState,
-                promotion: {
-                    active: true,
-                    position: { x: toX, y: toY },
-                    color: movingPiece.color,
-                    pendingMove: {
-                        from: { x: fromX, y: fromY },
-                        to: { x: toX, y: toY }
-                    },
-                    tileRef: tileElement || null
-                }
-            });
-            return;
-        }
-
-        const newPieces = clonePieces(pieces);
+        let newPieces = clonePieces(pieces);
+        const newKings = { ...kings };
 
         if (newPieces[fromY][fromX]) {
             newPieces[fromY][fromX]!.hasMoved = true;
         }
 
         const moveRecord = {
-            piece: {...movingPiece},
+            piece: { ...movingPiece },
             from: { x: fromX, y: fromY },
             to: { x: toX, y: toY }
         };
 
-        let isEnPassant = false;
-        if (isPawnMove && toX !== fromX && !pieces[toY][toX] && enPassantTarget) {
-            isEnPassant = enPassantTarget.x === toX && enPassantTarget.y === toY;
+        const newMoveHistory = [...boardState.moveHistory, moveRecord];
 
-            if (isEnPassant) {
-                const capturedPawnY = currentPlayer === Color.White ? toY + 1 : toY - 1;
-                newPieces[capturedPawnY][toX] = null;
-            }
+        switch (movingPiece.type) {
+            case Piece.Pawn:
+
+                { if (shouldPromotePawn(movingPiece, toY)) {
+                    const tileElement = document.querySelector(
+                        `[data-position="${String.fromCharCode(97 + toX)}${8 - toY}"]`
+                    ) as HTMLElement;
+
+                    setBoardState({
+                        ...boardState,
+                        promotion: {
+                            active: true,
+                            position: { x: toX, y: toY },
+                            color: currentPlayer,
+                            pendingMove: {
+                                from: { x: fromX, y: fromY },
+                                to: { x: toX, y: toY }
+                            },
+                            tileRef: tileElement || null
+                        }
+                    });
+                    return;
+                }
+
+                const enPassantTarget = getEnPassantTarget(boardState.moveHistory);
+                const { pieces: updatedPieces } = handleEnPassant(
+                    newPieces,
+                    fromX,
+                    toX,
+                    toY,
+                    currentPlayer,
+                    enPassantTarget
+                );
+                newPieces = updatedPieces;
+                break; }
+
+            case Piece.King:
+                newPieces = handleCastling(newPieces, fromX, toX, currentPlayer);
+                newKings[currentPlayer] = { x: toX, y: toY };
+                break;
+
+            default:
+                break;
         }
 
         newPieces[toY][toX] = newPieces[fromY][fromX];
         newPieces[fromY][fromX] = null;
-
-
-        const newKings = {...kings};
-
-        if (isKingMove) {
-            const isCastling = Math.abs(fromX - toX) === 2;
-
-            if (isCastling) {
-                const backRank = currentPlayer === Color.White ? 7 : 0;
-
-                if (toX > fromX) {
-                    const rookPiece = newPieces[backRank][7];
-                    newPieces[backRank][5] = rookPiece;
-                    newPieces[backRank][7] = null;
-                    if (rookPiece) rookPiece.hasMoved = true;
-                } else {
-                    const rookPiece = newPieces[backRank][0];
-                    newPieces[backRank][3] = rookPiece;
-                    newPieces[backRank][0] = null;
-                    if (rookPiece) rookPiece.hasMoved = true;
-                }
-            }
-
-            newKings[currentPlayer] = { x: toX, y: toY };
-        }
-
-        let newEnPassantTarget = null;
-        if (isPawnMove && Math.abs(fromY - toY) === 2) {
-            const enPassantY = fromY + (currentPlayer === Color.White ? -1 : 1);
-            newEnPassantTarget = { x: fromX, y: enPassantY };
-        }
 
         const nextPlayer = getNextPlayer(currentPlayer);
 
@@ -215,7 +202,7 @@ export const useChessLogic = (
                 pieces: newPieces,
                 kings: newKings,
                 currentPlayer: nextPlayer,
-                enPassantTarget: newEnPassantTarget
+                moveHistory: newMoveHistory
             }
         );
 
@@ -227,8 +214,7 @@ export const useChessLogic = (
             kings: newKings,
             check,
             checkmate,
-            enPassantTarget: newEnPassantTarget,
-            moveHistory: [...boardState.moveHistory, moveRecord],
+            moveHistory: newMoveHistory,
             lastMove: {
                 from: { x: fromX, y: fromY },
                 to: { x: toX, y: toY }

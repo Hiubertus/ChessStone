@@ -1,6 +1,7 @@
 import {ChessPiece} from "@/types/ChessPiece.ts";
 import {Color} from "@/enums/Color.ts";
 import {Position} from "@/types/Position.ts";
+import {MoveHistory} from "@/types/MoveHistory.ts";
 
 export type BoardState = {
     pieces: (ChessPiece | null)[][];
@@ -10,12 +11,7 @@ export type BoardState = {
     kings: Record<Color, Position>;
     check: Color | null;
     checkmate: Color | null;
-    enPassantTarget: Position | null;
-    moveHistory: {
-        piece: ChessPiece;
-        from: Position;
-        to: Position;
-    }[];
+    moveHistory: MoveHistory[];
     lastMove: {
         from: Position | null;
         to: Position | null;

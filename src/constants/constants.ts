@@ -43,11 +43,6 @@ export const CHECK_DIRECTIONS: PieceDirection[] = [
     { dx: -1, dy: -1, pieces: [Piece.Rook, Piece.Queen] }
 ];
 
-export const CASTLING = {
-    KING_SIDE: { kingMove: 2, rookMove: -1 },
-    QUEEN_SIDE: { kingMove: -2, rookMove: 1 }
-} as const;
-
 export const INITIAL_POSITIONS = {
-    BACK_ROW: [Piece.Rook, Piece.Knight, Piece.Bishop, Piece.Queen, Piece.King, Piece.Bishop, Piece.Knight, Piece.Rook] as ChessPiece['type'][]
+    BACK_ROW: [Piece.Knight ,Piece.Rook, Piece.Bishop, Piece.Queen, Piece.King, Piece.Bishop, Piece.Knight, Piece.Rook] as ChessPiece['type'][]
 };

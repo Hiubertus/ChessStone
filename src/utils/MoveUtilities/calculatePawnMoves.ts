@@ -2,17 +2,20 @@ import {isValidPosition} from "@/utils/BoardUtilities/isValidPosition.ts";
 import {ChessPiece} from "@/types/ChessPiece.ts";
 import {Color} from "@/enums/Color.ts";
 import {Position} from "@/types/Position.ts";
+import {MoveHistory} from "@/types/MoveHistory.ts";
+import {getEnPassantTarget} from "@/utils/MoveUtilities/getEnPassantTarget.ts";
 
 export const calculatePawnMoves = (
     x: number,
     y: number,
     pieces: (ChessPiece | null)[][],
     color: Color,
-    enPassantTarget: Position | null
+    moveHistory: MoveHistory[]
 ): Position[] => {
     const possibleMoves: Position[] = [];
     const direction = color === Color.White ? -1 : 1;
     const piece = pieces[y][x]!;
+    const enPassantTarget = getEnPassantTarget(moveHistory);
 
     if (isValidPosition(x, y + direction) && !pieces[y + direction][x]) {
         possibleMoves.push({ x, y: y + direction });

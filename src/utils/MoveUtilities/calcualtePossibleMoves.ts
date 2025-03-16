@@ -18,11 +18,11 @@ export const calculatePossibleMoves = (
     if (!piece) return [];
 
     const { color, type } = piece;
-    const { enPassantTarget } = boardState;
+    const { moveHistory } = boardState;
 
     switch (type) {
         case Piece.Pawn:
-            return calculatePawnMoves(x, y, pieces, color, enPassantTarget);
+            return calculatePawnMoves(x, y, pieces, color, moveHistory);
         case Piece.Knight:
             return calculateKnightMoves(x, y, pieces, color);
         case Piece.Bishop:
