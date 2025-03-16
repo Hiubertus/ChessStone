@@ -26,7 +26,6 @@ export const useChessBoard = () => {
             position: null,
             color: null,
             pendingMove: null,
-            tileRef: null
         }
     };
 

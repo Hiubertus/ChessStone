@@ -12,10 +12,9 @@ type PromotionProps = {
     color: Color;
     onPromote: (pieceType: ChessPiece['type']) => void;
     isOpen: boolean;
-    tileRef: HTMLElement | null;
 };
 
-export const PawnPromotion = ({ position, color, onPromote, isOpen, tileRef }: PromotionProps) => {
+export const PawnPromotion = ({ position, color, onPromote, isOpen }: PromotionProps) => {
     if (!isOpen || !position || !color) return null;
 
     const promotionPieces: ChessPiece['type'][] = [Piece.Queen, Piece.Rook, Piece.Bishop, Piece.Knight];
@@ -28,40 +27,29 @@ export const PawnPromotion = ({ position, color, onPromote, isOpen, tileRef }: P
         const promotionWidth = 176;
         const promotionHeight = 64;
 
-        if (tileRef) {
-            const tileRect = tileRef.getBoundingClientRect();
+        if (!position) return {};
 
-            const isBlackPiece = color === Color.Black;
-
-            return {
-                position: 'fixed',
-                left: `${tileRect.left + (tileRect.width / 2) - (promotionWidth / 2)}px`,
-                top: isBlackPiece ? `${tileRect.bottom}px` : `${tileRect.top - promotionHeight}px`,
-                zIndex: 1000,
-            };
-        } else {
-            const chessBoard = document.querySelector('.chess-board');
-            if (!chessBoard) {
-                return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
-            }
-
-            const boardRect = chessBoard.getBoundingClientRect();
-            const tileSize = boardRect.width / 8;
-
-            const leftPos = boardRect.left + (position.x * tileSize) + (tileSize / 2) - (promotionWidth / 2);
-
-            const isBlackPiece = color === Color.Black;
-            const topPos = isBlackPiece
-                ? boardRect.top + ((position.y + 1) * tileSize)
-                : boardRect.top + (position.y * tileSize) - promotionHeight;
-
-            return {
-                position: 'fixed',
-                left: `${leftPos}px`,
-                top: `${topPos}px`,
-                zIndex: 1000,
-            };
+        const chessBoard = document.querySelector('.chess-board');
+        if (!chessBoard) {
+            return { position: 'fixed', top: '50%', left: '50%', transform: 'translate(-50%, -50%)' };
         }
+
+        const boardRect = chessBoard.getBoundingClientRect();
+        const tileSize = boardRect.width / 8;
+
+        const leftPos = boardRect.left + (position.x * tileSize) + (tileSize / 2) - (promotionWidth / 2);
+
+        const isBlackPiece = color === Color.Black;
+        const topPos = isBlackPiece
+            ? boardRect.top + ((position.y + 1) * tileSize)
+            : boardRect.top + (position.y * tileSize) - promotionHeight;
+
+        return {
+            position: 'fixed',
+            left: `${leftPos}px`,
+            top: `${topPos}px`,
+            zIndex: 1000,
+        };
     };
 
 

@@ -80,7 +80,6 @@ export const useChessLogic = (
                 position: null,
                 color: null,
                 pendingMove: null,
-                tileRef: null
             }
         });
     };
@@ -147,10 +146,6 @@ export const useChessLogic = (
             case Piece.Pawn:
 
                 { if (shouldPromotePawn(movingPiece, toY)) {
-                    const tileElement = document.querySelector(
-                        `[data-position="${String.fromCharCode(97 + toX)}${8 - toY}"]`
-                    ) as HTMLElement;
-
                     setBoardState({
                         ...boardState,
                         promotion: {
@@ -161,7 +156,6 @@ export const useChessLogic = (
                                 from: { x: fromX, y: fromY },
                                 to: { x: toX, y: toY }
                             },
-                            tileRef: tileElement || null
                         }
                     });
                     return;
@@ -224,7 +218,6 @@ export const useChessLogic = (
                 position: null,
                 color: null,
                 pendingMove: null,
-                tileRef: null
             },
         });
     };

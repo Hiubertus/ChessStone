@@ -27,7 +27,6 @@ export const handleCastling = (
             const closestRookX = kingsideRooks.reduce((closest, current) =>
                 current < closest ? current : closest, 7);
 
-            // Move the rook to f1/f8 (5)
             const rookPiece = pieces[backRank][closestRookX];
             pieces[backRank][5] = rookPiece;
             pieces[backRank][closestRookX] = null;

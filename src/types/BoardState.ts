@@ -24,6 +24,5 @@ export type BoardState = {
             from: Position,
             to: Position
         } | null;
-        tileRef: HTMLElement | null;
     };
 };

@@ -60,7 +60,6 @@ export const Board = () => {
                     color={boardState.promotion.color}
                     onPromote={handlePromotion}
                     isOpen={boardState.promotion.active}
-                    tileRef={boardState.promotion.tileRef}
                 />
             )}
 
