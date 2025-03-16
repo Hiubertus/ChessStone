@@ -2,21 +2,22 @@ import {ChessPiece} from "@/types/ChessPiece.ts";
 import {BoardState} from "@/types/BoardState.ts";
 import {isKingInCheck} from "@/utils/CheckUtilities/isKingInCheck.ts";
 import {playerHasLegalMoves} from "@/utils/CheckUtilities/playerHasLegalMoves.ts";
+import {Color} from "@/enums/Color.ts";
 
 export const getCheckStatus = (
     pieces: (ChessPiece | null)[][],
     kings: BoardState['kings'],
-    currentPlayer: 'white' | 'black',
+    currentPlayer: Color,
     boardState: BoardState
-): { check: 'white' | 'black' | null, checkmate: 'white' | 'black' | null } => {
-    const whiteInCheck = isKingInCheck(kings.white.x, kings.white.y, 'white', pieces);
-    const blackInCheck = isKingInCheck(kings.black.x, kings.black.y, 'black', pieces);
+): { check: Color | null, checkmate: Color | null } => {
+    const whiteInCheck = isKingInCheck(kings[Color.White].x, kings[Color.White].y, Color.White, pieces);
+    const blackInCheck = isKingInCheck(kings[Color.Black].x, kings[Color.Black].y, Color.Black, pieces);
 
-    let check: 'white' | 'black' | null = null;
-    if (whiteInCheck) check = 'white';
-    if (blackInCheck) check = 'black';
+    let check = null;
+    if (whiteInCheck) check = Color.White;
+    if (blackInCheck) check = Color.Black;
 
-    let checkmate: 'white' | 'black' | null = null;
+    let checkmate = null;
     if (check) {
         const hasLegalMoves = playerHasLegalMoves(check, pieces, {
             ...boardState,

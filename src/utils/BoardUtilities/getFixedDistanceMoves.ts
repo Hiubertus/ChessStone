@@ -1,15 +1,17 @@
 import {Direction} from "@/types/Direction.ts";
 import {ChessPiece} from "@/types/ChessPiece.ts";
 import {isValidPosition} from "@/utils/BoardUtilities/isValidPosition.ts";
+import {Color} from "@/enums/Color.ts";
+import {Position} from "@/types/Position.ts";
 
 export const getFixedDistanceMoves = (
     startX: number,
     startY: number,
     directions: Direction[],
     pieces: (ChessPiece | null)[][],
-    pieceColor: 'white' | 'black'
-): { x: number, y: number }[] => {
-    const moves: { x: number, y: number }[] = [];
+    pieceColor: Color
+): Position[] => {
+    const moves: Position[] = [];
 
     for (const dir of directions) {
         const newX = startX + dir.dx;

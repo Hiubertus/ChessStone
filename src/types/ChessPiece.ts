@@ -1,6 +1,10 @@
+import {Color} from "@/enums/Color.ts";
+import {Piece} from "@/enums/Piece.ts";
+
 export type ChessPiece = {
     id: string;
-    type: 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
-    color: 'white' | 'black';
+    type: Piece;
+    color: Color
     hasMoved: boolean;
 }
+

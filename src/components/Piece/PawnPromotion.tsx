@@ -1,12 +1,15 @@
-import { createPortal } from 'react-dom';
-import { Button } from '@/components/ui/button';
-import { ChessPiece } from '@/types/ChessPiece';
+import {createPortal} from 'react-dom';
+import {Button} from '@/components/ui/button';
+import {ChessPiece} from '@/types/ChessPiece';
 import "./PawnPromotiom.scss"
 import {CSSProperties} from "react";
+import {Piece} from "@/enums/Piece.ts";
+import {Position} from "@/types/Position.ts";
+import {Color} from "@/enums/Color.ts";
 
 type PromotionProps = {
-    position: { x: number, y: number };
-    color: 'white' | 'black';
+    position: Position;
+    color: Color;
     onPromote: (pieceType: ChessPiece['type']) => void;
     isOpen: boolean;
     tileRef: HTMLElement | null;
@@ -15,7 +18,7 @@ type PromotionProps = {
 export const PawnPromotion = ({ position, color, onPromote, isOpen, tileRef }: PromotionProps) => {
     if (!isOpen || !position || !color) return null;
 
-    const promotionPieces: ChessPiece['type'][] = ['queen', 'rook', 'bishop', 'knight'];
+    const promotionPieces: ChessPiece['type'][] = [Piece.Queen, Piece.Rook, Piece.Bishop, Piece.Knight];
 
     const handlePromote = (pieceType: ChessPiece['type']) => {
         onPromote(pieceType);
@@ -28,10 +31,10 @@ export const PawnPromotion = ({ position, color, onPromote, isOpen, tileRef }: P
         if (tileRef) {
             const tileRect = tileRef.getBoundingClientRect();
 
-            const isBlackPiece = color === 'black';
+            const isBlackPiece = color === Color.Black;
 
             return {
-                position: 'fixed',  // Use fixed positioning relative to viewport
+                position: 'fixed',
                 left: `${tileRect.left + (tileRect.width / 2) - (promotionWidth / 2)}px`,
                 top: isBlackPiece ? `${tileRect.bottom}px` : `${tileRect.top - promotionHeight}px`,
                 zIndex: 1000,
@@ -43,11 +46,11 @@ export const PawnPromotion = ({ position, color, onPromote, isOpen, tileRef }: P
             }
 
             const boardRect = chessBoard.getBoundingClientRect();
-            const tileSize = boardRect.width / 8; // Assuming square board with 8 tiles
+            const tileSize = boardRect.width / 8;
 
             const leftPos = boardRect.left + (position.x * tileSize) + (tileSize / 2) - (promotionWidth / 2);
 
-            const isBlackPiece = color === 'black';
+            const isBlackPiece = color === Color.Black;
             const topPos = isBlackPiece
                 ? boardRect.top + ((position.y + 1) * tileSize)
                 : boardRect.top + (position.y * tileSize) - promotionHeight;

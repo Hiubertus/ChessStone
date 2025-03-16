@@ -1,8 +1,10 @@
 import './Piece.scss';
+import {Piece as PieceType} from "@/enums/Piece.ts";
+import {Color} from "@/enums/Color.ts";
 
 type Props = {
-    type: 'pawn' | 'rook' | 'knight' | 'bishop' | 'queen' | 'king';
-    color: 'white' | 'black';
+    type: PieceType;
+    color: Color;
 }
 
 export const Piece = ({ type, color }: Props) => {

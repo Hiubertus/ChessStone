@@ -1,10 +1,8 @@
 import { ChessPiece } from "@/types/ChessPiece";
+import {Position} from "@/types/Position.ts";
 
 export type ChessTile = {
-    position: {
-        x: number;
-        y: number;
-    };
+    position: Position;
     isLight: boolean;
     piece: ChessPiece | null;
     isSelected: boolean;

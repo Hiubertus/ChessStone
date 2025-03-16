@@ -3,6 +3,7 @@ import { PawnPromotion } from "@/components/Piece/PawnPromotion";
 import './Board.scss';
 import { useChessBoard } from "@/hooks/useChessBoard";
 import { useChessLogic } from "@/hooks/useChessLogic";
+import {Color} from "@/enums/Color.ts";
 
 export const Board = () => {
     const { boardState, setBoardState } = useChessBoard();
@@ -74,7 +75,7 @@ export const Board = () => {
 
                 {boardState.checkmate && (
                     <div className="checkmate-status">
-                        Checkmate! {boardState.checkmate === 'white' ? 'Black' : 'White'} wins!
+                        Checkmate! {boardState.checkmate === Color.White ? Color.Black : Color.White} wins!
                     </div>
                 )}
             </div>

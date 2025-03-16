@@ -1,5 +1,6 @@
 import {Direction, PieceDirection} from "@/types/Direction.ts";
 import {ChessPiece} from "@/types/ChessPiece.ts";
+import {Piece} from "@/enums/Piece.ts";
 
 export const DIRECTION = {
     ORTHOGONAL: [
@@ -31,15 +32,15 @@ export const DIRECTION = {
 };
 
 export const CHECK_DIRECTIONS: PieceDirection[] = [
-    { dx: 0, dy: 1, pieces: ['rook', 'queen'] },
-    { dx: 0, dy: -1, pieces: ['rook', 'queen'] },
-    { dx: 1, dy: 0, pieces: ['rook', 'queen'] },
-    { dx: -1, dy: 0, pieces: ['rook', 'queen'] },
+    { dx: 0, dy: 1, pieces: [Piece.Rook, Piece.Queen] },
+    { dx: 0, dy: -1, pieces: [Piece.Rook, Piece.Queen] },
+    { dx: 1, dy: 0, pieces: [Piece.Rook, Piece.Queen] },
+    { dx: -1, dy: 0, pieces: [Piece.Rook, Piece.Queen] },
 
-    { dx: 1, dy: 1, pieces: ['bishop', 'queen'] },
-    { dx: 1, dy: -1, pieces: ['bishop', 'queen'] },
-    { dx: -1, dy: 1, pieces: ['bishop', 'queen'] },
-    { dx: -1, dy: -1, pieces: ['bishop', 'queen'] }
+    { dx: 1, dy: 1, pieces: [Piece.Rook, Piece.Queen] },
+    { dx: 1, dy: -1, pieces: [Piece.Rook, Piece.Queen] },
+    { dx: -1, dy: 1, pieces: [Piece.Rook, Piece.Queen] },
+    { dx: -1, dy: -1, pieces: [Piece.Rook, Piece.Queen] }
 ];
 
 export const CASTLING = {
@@ -48,5 +49,5 @@ export const CASTLING = {
 } as const;
 
 export const INITIAL_POSITIONS = {
-    BACK_ROW: ['rook', 'knight', 'bishop', 'queen', 'king', 'bishop', 'knight', 'rook'] as ChessPiece['type'][]
+    BACK_ROW: [Piece.Rook, Piece.Knight, Piece.Bishop, Piece.Queen, Piece.King, Piece.Bishop, Piece.Knight, Piece.Rook] as ChessPiece['type'][]
 };

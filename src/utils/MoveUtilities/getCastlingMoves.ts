@@ -2,25 +2,28 @@ import {isKingInCheck} from "@/utils/CheckUtilities/isKingInCheck.ts";
 import {ChessPiece} from "@/types/ChessPiece.ts";
 import {BoardState} from "@/types/BoardState.ts";
 import {CASTLING} from "@/constants/constants.ts";
+import {Color} from "@/enums/Color.ts";
+import {Piece} from "@/enums/Piece.ts";
+import {Position} from "@/types/Position.ts";
 
 export const getCastlingMoves = (
     kingX: number,
     kingY: number,
     pieces: (ChessPiece | null)[][],
-    color: 'white' | 'black',
+    color: Color,
     boardState: BoardState
-): { x: number, y: number }[] => {
-    const castlingMoves: { x: number, y: number }[] = [];
+): Position[] => {
+    const castlingMoves: Position[] = [];
     const { check } = boardState;
     const king = pieces[kingY][kingX];
 
     if (check === color || !king || king.hasMoved) return castlingMoves;
 
-    const backRank = color === 'white' ? 7 : 0;
+    const backRank = color === Color.White ? 7 : 0;
 
     const findRook = (x: number) => {
         const piece = pieces[backRank][x];
-        return piece && piece.type === 'rook' && piece.color === color && !piece.hasMoved;
+        return piece && piece.type === Piece.Rook && piece.color === color && !piece.hasMoved;
     };
 
     const kingsideRookExists = findRook(7);

@@ -1,23 +1,25 @@
 import {CHECK_DIRECTIONS, DIRECTION} from "@/constants/constants.ts";
 import {ChessPiece} from "@/types/ChessPiece.ts";
 import {isValidPosition} from "@/utils/BoardUtilities/isValidPosition.ts";
+import {Color} from "@/enums/Color.ts";
+import {Piece} from "@/enums/Piece.ts";
 
 export const isKingInCheck = (
     kingX: number,
     kingY: number,
-    kingColor: 'white' | 'black',
+    kingColor: Color,
     pieces: (ChessPiece | null)[][]
 ): boolean => {
-    const opponentColor = kingColor === 'white' ? 'black' : 'white';
+    const opponentColor = kingColor === Color.White ? Color.Black : Color.White;
 
-    const pawnDirection = kingColor === 'white' ? -1 : 1;
+    const pawnDirection = kingColor === Color.White ? -1 : 1;
     for (const dx of [-1, 1]) {
         const checkX = kingX + dx;
         const checkY = kingY + pawnDirection;
 
         if (isValidPosition(checkX, checkY)) {
             const piece = pieces[checkY][checkX];
-            if (piece && piece.type === 'pawn' && piece.color === opponentColor) {
+            if (piece && piece.type === Piece.Pawn && piece.color === opponentColor) {
                 return true;
             }
         }
@@ -29,7 +31,7 @@ export const isKingInCheck = (
 
         if (isValidPosition(checkX, checkY)) {
             const piece = pieces[checkY][checkX];
-            if (piece && piece.type === 'knight' && piece.color === opponentColor) {
+            if (piece && piece.type === Piece.Knight && piece.color === opponentColor) {
                 return true;
             }
         }
@@ -60,7 +62,7 @@ export const isKingInCheck = (
 
         if (isValidPosition(checkX, checkY)) {
             const piece = pieces[checkY][checkX];
-            if (piece && piece.type === 'king' && piece.color === opponentColor) {
+            if (piece && piece.type === Piece.King && piece.color === opponentColor) {
                 return true;
             }
         }

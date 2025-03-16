@@ -1,15 +1,17 @@
 import {isValidPosition} from "@/utils/BoardUtilities/isValidPosition.ts";
 import {ChessPiece} from "@/types/ChessPiece.ts";
+import {Color} from "@/enums/Color.ts";
+import {Position} from "@/types/Position.ts";
 
 export const calculatePawnMoves = (
     x: number,
     y: number,
     pieces: (ChessPiece | null)[][],
-    color: 'white' | 'black',
-    enPassantTarget: { x: number, y: number } | null
-): { x: number, y: number }[] => {
-    const possibleMoves: { x: number, y: number }[] = [];
-    const direction = color === 'white' ? -1 : 1;
+    color: Color,
+    enPassantTarget: Position | null
+): Position[] => {
+    const possibleMoves: Position[] = [];
+    const direction = color === Color.White ? -1 : 1;
     const piece = pieces[y][x]!;
 
     if (isValidPosition(x, y + direction) && !pieces[y + direction][x]) {

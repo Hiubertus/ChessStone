@@ -1,7 +1,9 @@
-import { useState } from "react";
-import { BoardState } from "@/types/BoardState";
-import { ChessPiece } from "@/types/ChessPiece";
-import { INITIAL_POSITIONS } from "@/constants/constants.ts";
+import {useState} from "react";
+import {BoardState} from "@/types/BoardState";
+import {ChessPiece} from "@/types/ChessPiece";
+import {INITIAL_POSITIONS} from "@/constants/constants.ts";
+import {Color} from "@/enums/Color.ts";
+import {Piece} from "@/enums/Piece.ts";
 
 export const useChessBoard = () => {
     const initialPieces = initializeBoard();
@@ -9,10 +11,10 @@ export const useChessBoard = () => {
         pieces: initialPieces,
         selectedTile: null,
         possibleMoves: [],
-        currentPlayer: 'white',
+        currentPlayer: Color.White,
         kings: {
-            white: { x: 4, y: 7 },
-            black: { x: 4, y: 0 }
+            [Color.White]: { x: 4, y: 7 },
+            [Color.Black]: { x: 4, y: 0 }
         },
         check: null,
         checkmate: null,
@@ -47,36 +49,36 @@ export const initializeBoard = (): (ChessPiece | null)[][] => {
 
     for (let i = 0; i < 8; i++) {
         board[0][i] = {
-            id: generateId(backRow[i], 'black', Math.floor(i/2) + 1),
+            id: generateId(backRow[i], Color.Black, Math.floor(i/2) + 1),
             type: backRow[i],
-            color: 'black',
+            color: Color.Black,
             hasMoved: false
         };
     }
 
     for (let i = 0; i < 8; i++) {
         board[1][i] = {
-            id: generateId('pawn', 'black', i + 1),
-            type: 'pawn',
-            color: 'black',
+            id: generateId(Piece.Pawn, Color.Black, i + 1),
+            type: Piece.Pawn,
+            color: Color.Black,
             hasMoved: false
         };
     }
 
     for (let i = 0; i < 8; i++) {
         board[6][i] = {
-            id: generateId('pawn', 'white', i + 1),
-            type: 'pawn',
-            color: 'white',
+            id: generateId(Piece.Pawn, Color.White, i + 1),
+            type: Piece.Pawn,
+            color: Color.White,
             hasMoved: false
         };
     }
 
     for (let i = 0; i < 8; i++) {
         board[7][i] = {
-            id: generateId(backRow[i], 'white', Math.floor(i/2) + 1),
+            id: generateId(backRow[i], Color.White, Math.floor(i/2) + 1),
             type: backRow[i],
-            color: 'white',
+            color: Color.White,
             hasMoved: false
         };
     }

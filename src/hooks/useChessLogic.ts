@@ -8,7 +8,8 @@ import {getNextPlayer} from "@/utils/BoardUtilities/getNextPlayer.ts";
 import {calculateLegalMoves} from "@/utils/CheckUtilities/calculateLegalMoves.ts";
 import {isMoveInPossibleMoves} from "@/utils/BoardUtilities/isMoveInPossibleMoves.ts";
 import {shouldPromotePawn} from "@/utils/BoardUtilities/shouldPromotePawn.ts";
-
+import {Piece} from "@/enums/Piece.ts";
+import {Color} from "@/enums/Color.ts";
 
 export const useChessLogic = (
     boardState: BoardState,
@@ -123,8 +124,8 @@ export const useChessLogic = (
     const executeMove = (fromX: number, fromY: number, toX: number, toY: number) => {
         const { pieces, currentPlayer, kings, enPassantTarget } = boardState;
         const movingPiece = pieces[fromY][fromX]!;
-        const isKingMove = movingPiece.type === 'king';
-        const isPawnMove = movingPiece.type === 'pawn';
+        const isKingMove = movingPiece.type === Piece.King;
+        const isPawnMove = movingPiece.type === Piece.Pawn;
 
         if (isPawnMove && shouldPromotePawn(movingPiece, toY)) {
             const tileElement = document.querySelector(
@@ -164,7 +165,7 @@ export const useChessLogic = (
             isEnPassant = enPassantTarget.x === toX && enPassantTarget.y === toY;
 
             if (isEnPassant) {
-                const capturedPawnY = currentPlayer === 'white' ? toY + 1 : toY - 1;
+                const capturedPawnY = currentPlayer === Color.White ? toY + 1 : toY - 1;
                 newPieces[capturedPawnY][toX] = null;
             }
         }
@@ -179,7 +180,7 @@ export const useChessLogic = (
             const isCastling = Math.abs(fromX - toX) === 2;
 
             if (isCastling) {
-                const backRank = currentPlayer === 'white' ? 7 : 0;
+                const backRank = currentPlayer === Color.White ? 7 : 0;
 
                 if (toX > fromX) {
                     const rookPiece = newPieces[backRank][7];
@@ -199,7 +200,7 @@ export const useChessLogic = (
 
         let newEnPassantTarget = null;
         if (isPawnMove && Math.abs(fromY - toY) === 2) {
-            const enPassantY = fromY + (currentPlayer === 'white' ? -1 : 1);
+            const enPassantY = fromY + (currentPlayer === Color.White ? -1 : 1);
             newEnPassantTarget = { x: fromX, y: enPassantY };
         }
 

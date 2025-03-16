@@ -1,9 +1,10 @@
 import {calculateLegalMoves} from "@/utils/CheckUtilities/calculateLegalMoves.ts";
 import {ChessPiece} from "@/types/ChessPiece.ts";
 import {BoardState} from "@/types/BoardState.ts";
+import {Color} from "@/enums/Color.ts";
 
 export const playerHasLegalMoves = (
-    player: 'white' | 'black',
+    player: Color,
     pieces: (ChessPiece | null)[][],
     boardState: BoardState
 ): boolean => {

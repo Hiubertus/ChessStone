@@ -1,33 +1,32 @@
 import {ChessPiece} from "@/types/ChessPiece.ts";
+import {Color} from "@/enums/Color.ts";
+import {Position} from "@/types/Position.ts";
 
 export type BoardState = {
     pieces: (ChessPiece | null)[][];
-    selectedTile: { x: number, y: number } | null;
-    possibleMoves: { x: number, y: number }[];
-    currentPlayer: 'white' | 'black';
-    kings: {
-        white: { x: number, y: number };
-        black: { x: number, y: number };
-    };
-    check: 'white' | 'black' | null;
-    checkmate: 'white' | 'black' | null;
-    enPassantTarget: { x: number, y: number } | null;
+    selectedTile: Position | null;
+    possibleMoves: Position[];
+    currentPlayer: Color;
+    kings: Record<Color, Position>;
+    check: Color | null;
+    checkmate: Color | null;
+    enPassantTarget: Position | null;
     moveHistory: {
         piece: ChessPiece;
-        from: { x: number, y: number };
-        to: { x: number, y: number };
+        from: Position;
+        to: Position;
     }[];
     lastMove: {
-        from: { x: number, y: number } | null;
-        to: { x: number, y: number } | null;
+        from: Position | null;
+        to: Position | null;
     };
     promotion: {
         active: boolean;
-        position: { x: number, y: number } | null;
-        color: 'white' | 'black' | null;
+        position: Position | null;
+        color: Color | null;
         pendingMove: {
-            from: { x: number, y: number },
-            to: { x: number, y: number }
+            from: Position,
+            to: Position
         } | null;
         tileRef: HTMLElement | null;
     };
