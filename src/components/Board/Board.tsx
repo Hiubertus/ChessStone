@@ -3,38 +3,77 @@ import { PawnPromotion } from "@/components/Piece/PawnPromotion";
 import './Board.scss';
 import { useChessBoard } from "@/hooks/useChessBoard";
 import { useChessLogic } from "@/hooks/useChessLogic";
-import {Color} from "@/enums/Color.ts";
+import { standardBoardConfig } from "@/constants/boards.ts";
+import { Piece } from "@/enums/Piece.ts";
 
 export const Board = () => {
-    const { boardState, setBoardState } = useChessBoard();
+    const { boardState, setBoardState } = useChessBoard(standardBoardConfig());
     const {
         handleTileClick,
         handlePromotion,
         isMoveInPossibleMoves
     } = useChessLogic(boardState, setBoardState);
 
+    const getMaxDimensions = () => {
+        let maxRows = 0;
+        let maxCols = 0;
+
+        boardState.boardLayout.forEach(pos => {
+            maxRows = Math.max(maxRows, pos.y + 1);
+            maxCols = Math.max(maxCols, pos.x + 1);
+        });
+
+        return { rows: maxRows, cols: maxCols };
+    };
+
+    const { rows, cols } = getMaxDimensions();
+
+    const isPositionAllowed = (x: number, y: number): boolean => {
+        return boardState.boardLayout.some(pos => pos.x === x && pos.y === y);
+    };
+
+    const lastMove = boardState.moveHistory.length > 0
+        ? boardState.moveHistory[boardState.moveHistory.length - 1]
+        : null;
+
     return (
         <div>
-            <div className="chess-board">
-                {Array(8).fill(null).map((_, y) => (
-                    Array(8).fill(null).map((_, x) => {
+            <div className="chess-board" style={{
+                display: 'grid',
+                gridTemplateColumns: `repeat(${cols}, 60px)`,
+                gridTemplateRows: `repeat(${rows}, 60px)`,
+                borderRadius: '4px',
+                overflow: 'hidden',
+                boxShadow: '0 0 10px rgba(0, 0, 0, 0.5)',
+                border: '2px solid #333',
+            }}>
+                {Array(rows).fill(null).map((_, y) => (
+                    Array(cols).fill(null).map((_, x) => {
+                        if (!isPositionAllowed(x, y)) {
+                            return null;
+                        }
+
                         const isLight = (x + y) % 2 === 0;
-                        const piece = boardState.pieces[y][x];
+                        const piece = boardState.pieces[y]?.[x] || null;
                         const isSelected = boardState.selectedTile !== null &&
                             boardState.selectedTile.x === x &&
                             boardState.selectedTile.y === y;
                         const isPossibleMove = isMoveInPossibleMoves(x, y, boardState.possibleMoves);
-                        const isCheck = boardState.check !== null &&
-                            boardState.kings[boardState.check].x === x &&
-                            boardState.kings[boardState.check].y === y;
 
-                        const isLastMoveFrom = boardState.lastMove.from !== null &&
-                            boardState.lastMove.from.x === x &&
-                            boardState.lastMove.from.y === y;
+                        // Check if this position has a king in check
+                        let isCheck = false;
+                        if (boardState.checksInProgress.length > 0 && piece) {
+                            isCheck = piece.type === Piece.King &&
+                                boardState.checksInProgress.includes(piece.color);
+                        }
 
-                        const isLastMoveTo = boardState.lastMove.to !== null &&
-                            boardState.lastMove.to.x === x &&
-                            boardState.lastMove.to.y === y;
+                        const isLastMoveFrom = lastMove !== null &&
+                            lastMove.from.x === x &&
+                            lastMove.from.y === y;
+
+                        const isLastMoveTo = lastMove !== null &&
+                            lastMove.to.x === x &&
+                            lastMove.to.y === y;
 
                         return (
                             <Tile
@@ -66,15 +105,28 @@ export const Board = () => {
             <div className="player-info">
                 <div>Current player: {boardState.currentPlayer}</div>
 
-                {boardState.check && (
+                {boardState.checksInProgress.length > 0 && (
                     <div className="check-status">
-                        {boardState.check.toUpperCase()} is in check!
+                        {boardState.checksInProgress.map(color => (
+                            <div key={color}>{color.toUpperCase()} is in check!</div>
+                        ))}
                     </div>
                 )}
 
-                {boardState.checkmate && (
+                {boardState.checkmatedPlayers.length > 0 && (
                     <div className="checkmate-status">
-                        Checkmate! {boardState.checkmate === Color.White ? Color.Black : Color.White} wins!
+                        Checkmate! {boardState.checkmatedPlayers.map(color => (
+                        <span key={color}>{color.toUpperCase()}</span>
+                    ))}
+                        {boardState.checkmatedPlayers.length === 1 && boardState.players.length === 2 && (
+                            <span>
+                                {" "}has lost. {boardState.players
+                                .find(player => player.color !== boardState.checkmatedPlayers[0])?.color} wins!
+                            </span>
+                        )}
+                        {boardState.checkmatedPlayers.length > 1 && (
+                            <span> have lost.</span>
+                        )}
                     </div>
                 )}
             </div>

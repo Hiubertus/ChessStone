@@ -3,24 +3,34 @@ import {ChessPiece} from "@/types/ChessPiece.ts";
 import {isValidPosition} from "@/utils/BoardUtilities/isValidPosition.ts";
 import {Color} from "@/enums/Color.ts";
 import {Piece} from "@/enums/Piece.ts";
+import {PlayerConfig} from "@/types/BoardConfig.ts";
 
 export const isKingInCheck = (
     kingX: number,
     kingY: number,
     kingColor: Color,
-    pieces: (ChessPiece | null)[][]
+    pieces: (ChessPiece | null)[][],
+    players: PlayerConfig[]
 ): boolean => {
-    const opponentColor = kingColor === Color.White ? Color.Black : Color.White;
+    const opponentColors = players
+        .filter(player => player.color !== kingColor)
+        .map(player => player.color);
 
-    const pawnDirection = kingColor === Color.White ? -1 : 1;
-    for (const dx of [-1, 1]) {
-        const checkX = kingX + dx;
-        const checkY = kingY + pawnDirection;
+    for (const player of players) {
+        if (player.color === kingColor) continue;
 
-        if (isValidPosition(checkX, checkY)) {
-            const piece = pieces[checkY][checkX];
-            if (piece && piece.type === Piece.Pawn && piece.color === opponentColor) {
-                return true;
+        const captureDirections = getPawnCaptureDirections(player);
+
+        for (const dir of captureDirections) {
+            const reverseDir = { dx: -dir.dx, dy: -dir.dy };
+            const checkX = kingX + reverseDir.dx;
+            const checkY = kingY + reverseDir.dy;
+
+            if (isValidPosition(checkX, checkY)) {
+                const piece = pieces[checkY][checkX];
+                if (piece && piece.type === Piece.Pawn && piece.color === player.color) {
+                    return true;
+                }
             }
         }
     }
@@ -31,7 +41,7 @@ export const isKingInCheck = (
 
         if (isValidPosition(checkX, checkY)) {
             const piece = pieces[checkY][checkX];
-            if (piece && piece.type === Piece.Knight && piece.color === opponentColor) {
+            if (piece && piece.type === Piece.Knight && opponentColors.includes(piece.color)) {
                 return true;
             }
         }
@@ -45,7 +55,7 @@ export const isKingInCheck = (
             const piece = pieces[checkY][checkX];
 
             if (piece) {
-                if (piece.color === opponentColor && dir.pieces.includes(piece.type)) {
+                if (opponentColors.includes(piece.color) && dir.pieces.includes(piece.type)) {
                     return true;
                 }
                 break;
@@ -62,11 +72,46 @@ export const isKingInCheck = (
 
         if (isValidPosition(checkX, checkY)) {
             const piece = pieces[checkY][checkX];
-            if (piece && piece.type === Piece.King && piece.color === opponentColor) {
+            if (piece && piece.type === Piece.King && opponentColors.includes(piece.color)) {
                 return true;
             }
         }
     }
 
     return false;
+};
+
+const getPawnCaptureDirections = (player: PlayerConfig) => {
+    const direction = player.pawnDirection;
+    const captureDirections = [];
+
+    if (direction.dy === -1 && direction.dx === 0) {
+        captureDirections.push({ dx: -1, dy: -1 });
+        captureDirections.push({ dx: 1, dy: -1 });
+    }
+
+    else if (direction.dy === 1 && direction.dx === 0) {
+        captureDirections.push({ dx: -1, dy: 1 });
+        captureDirections.push({ dx: 1, dy: 1 });
+    }
+
+    else if (direction.dy === 0 && direction.dx === -1) {
+        captureDirections.push({ dx: -1, dy: -1 });
+        captureDirections.push({ dx: -1, dy: 1 });
+    }
+
+    else if (direction.dy === 0 && direction.dx === 1) {
+        captureDirections.push({ dx: 1, dy: -1 });
+        captureDirections.push({ dx: 1, dy: 1 });
+    }
+
+    else {
+        captureDirections.push({ dx: direction.dx, dy: direction.dy });
+        captureDirections.push({
+            dx: direction.dx + (direction.dy !== 0 ? 1 : 0),
+            dy: direction.dy + (direction.dx !== 0 ? 1 : 0)
+        });
+    }
+
+    return captureDirections;
 };

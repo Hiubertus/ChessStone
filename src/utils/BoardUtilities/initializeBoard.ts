@@ -1,52 +1,26 @@
 import {ChessPiece} from "@/types/ChessPiece.ts";
-import {INITIAL_POSITIONS} from "@/constants/constants.ts";
-import {Color} from "@/enums/Color.ts";
-import {Piece} from "@/enums/Piece.ts";
+import {BoardConfig} from "@/types/BoardConfig.ts";
 
-export const initializeBoard = (): (ChessPiece | null)[][] => {
-    const board: (ChessPiece | null)[][] = Array(8).fill(null)
-        .map(() => Array(8).fill(null));
+export const initializeBoard = (config: BoardConfig): (ChessPiece | null)[][] => {
+    let maxRow = 0;
+    let maxCol = 0;
 
-    const generateId = (type: ChessPiece['type'], color: ChessPiece['color'], index: number) =>
-        `${color}_${type}_${index}`;
+    config.allowedPositions.forEach(pos => {
+        maxRow = Math.max(maxRow, pos.y);
+        maxCol = Math.max(maxCol, pos.x);
+    });
 
-    const backRow = INITIAL_POSITIONS.BACK_ROW;
+    const board: (ChessPiece | null)[][] = Array(maxRow + 1).fill(null)
+        .map(() => Array(maxCol + 1).fill(null));
 
-    for (let i = 0; i < 8; i++) {
-        board[0][i] = {
-            id: generateId(backRow[i], Color.Black, Math.floor(i/2) + 1),
-            type: backRow[i],
-            color: Color.Black,
-            hasMoved: false
+    config.initialPieces.forEach(piece => {
+        const { position } = piece;
+        const { x, y } = position;
+
+        board[y][x] = {
+            ...piece
         };
-    }
-
-    for (let i = 0; i < 8; i++) {
-        board[1][i] = {
-            id: generateId(Piece.Pawn, Color.Black, i + 1),
-            type: Piece.Pawn,
-            color: Color.Black,
-            hasMoved: false
-        };
-    }
-
-    for (let i = 0; i < 8; i++) {
-        board[6][i] = {
-            id: generateId(Piece.Pawn, Color.White, i + 1),
-            type: Piece.Pawn,
-            color: Color.White,
-            hasMoved: false
-        };
-    }
-
-    for (let i = 0; i < 8; i++) {
-        board[7][i] = {
-            id: generateId(backRow[i], Color.White, Math.floor(i/2) + 1),
-            type: backRow[i],
-            color: Color.White,
-            hasMoved: false
-        };
-    }
+    });
 
     return board;
 };

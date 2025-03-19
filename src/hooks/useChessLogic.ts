@@ -11,13 +11,15 @@ import { getEnPassantTarget } from "@/utils/MoveUtilities/getEnPassantTarget.ts"
 import { handleCastling} from "@/utils/MoveHandlers/handleCastling.ts";
 import { handleEnPassant} from "@/utils/MoveHandlers/handleEnPassant.ts";
 import { Piece } from "@/enums/Piece.ts";
+import { MoveHistory } from "@/types/MoveHistory.ts";
+import { Position } from "@/types/Position.ts";
 
 export const useChessLogic = (
     boardState: BoardState,
     setBoardState: Dispatch<SetStateAction<BoardState>>
 ) => {
     const handlePromotion = (pieceType: ChessPiece['type']) => {
-        const { promotion, pieces, currentPlayer, kings } = boardState;
+        const { promotion, pieces, currentPlayer, players } = boardState;
 
         if (!promotion.pendingMove || !promotion.position || !promotion.color) return;
 
@@ -26,23 +28,27 @@ export const useChessLogic = (
 
         const id = `${promotion.color}_${pieceType}_promoted_${Date.now()}`;
 
+        // Create the promoted piece with the correct position
         newPieces[to.y][to.x] = {
             id,
             type: pieceType,
             color: promotion.color,
-            hasMoved: true
+            hasMoved: true,
+            position: to,
         };
 
         newPieces[from.y][from.x] = null;
 
-        const nextPlayer = getNextPlayer(currentPlayer);
+        const nextPlayer = getNextPlayer(currentPlayer, players);
 
-        const moveRecord = {
+        // Create a move record
+        const moveRecord: MoveHistory = {
             piece: {
                 id,
                 type: pieceType,
                 color: promotion.color,
-                hasMoved: true
+                hasMoved: true,
+                position: to,
             },
             from,
             to
@@ -50,9 +56,8 @@ export const useChessLogic = (
 
         const newMoveHistory = [...boardState.moveHistory, moveRecord];
 
-        const { check, checkmate } = getCheckStatus(
+        const { checksInProgress, checkmatedPlayers } = getCheckStatus(
             newPieces,
-            kings,
             nextPlayer,
             {
                 ...boardState,
@@ -68,13 +73,9 @@ export const useChessLogic = (
             selectedTile: null,
             possibleMoves: [],
             currentPlayer: nextPlayer,
-            check,
-            checkmate,
+            checksInProgress,
+            checkmatedPlayers,
             moveHistory: newMoveHistory,
-            lastMove: {
-                from: from,
-                to: to
-            },
             promotion: {
                 active: false,
                 position: null,
@@ -85,9 +86,15 @@ export const useChessLogic = (
     };
 
     const handleTileClick = (x: number, y: number) => {
-        const { pieces, selectedTile, currentPlayer, promotion, checkmate } = boardState;
+        const {
+            pieces,
+            selectedTile,
+            currentPlayer,
+            promotion,
+            checkmatedPlayers
+        } = boardState;
 
-        if (promotion.active || checkmate) return;
+        if (promotion.active || checkmatedPlayers.includes(currentPlayer)) return;
 
         const clickedPiece = pieces[y][x];
 
@@ -124,95 +131,91 @@ export const useChessLogic = (
     };
 
     const executeMove = (fromX: number, fromY: number, toX: number, toY: number) => {
-        const { pieces, currentPlayer, kings } = boardState;
+        const { pieces, currentPlayer, players, moveHistory } = boardState;
         const movingPiece = pieces[fromY][fromX]!;
 
         let newPieces = clonePieces(pieces);
-        const newKings = { ...kings };
 
         if (newPieces[fromY][fromX]) {
             newPieces[fromY][fromX]!.hasMoved = true;
         }
 
-        const moveRecord = {
+        const moveRecord: MoveHistory = {
             piece: { ...movingPiece },
             from: { x: fromX, y: fromY },
             to: { x: toX, y: toY }
         };
 
-        const newMoveHistory = [...boardState.moveHistory, moveRecord];
+        const newMoveHistory = [...moveHistory, moveRecord];
+        const toPosition: Position = { x: toX, y: toY };
 
         switch (movingPiece.type) {
-            case Piece.Pawn:
-
-                { if (shouldPromotePawn(movingPiece, toY)) {
+            case Piece.Pawn: {
+                if (shouldPromotePawn(movingPiece, toPosition, boardState)) {
                     setBoardState({
                         ...boardState,
                         promotion: {
                             active: true,
-                            position: { x: toX, y: toY },
+                            position: toPosition,
                             color: currentPlayer,
                             pendingMove: {
                                 from: { x: fromX, y: fromY },
-                                to: { x: toX, y: toY }
+                                to: toPosition
                             },
                         }
                     });
                     return;
                 }
 
-                const enPassantTarget = getEnPassantTarget(boardState.moveHistory);
+                const enPassantTarget = getEnPassantTarget(moveHistory, players);
                 const { pieces: updatedPieces } = handleEnPassant(
                     newPieces,
-                    fromX,
                     toX,
                     toY,
                     currentPlayer,
-                    enPassantTarget
+                    enPassantTarget,
+                    players
                 );
                 newPieces = updatedPieces;
-                break; }
+                break;
+            }
 
             case Piece.King:
                 newPieces = handleCastling(newPieces, fromX, toX, currentPlayer);
-                newKings[currentPlayer] = { x: toX, y: toY };
                 break;
 
             default:
                 break;
         }
 
-        newPieces[toY][toX] = newPieces[fromY][fromX];
+        newPieces[toY][toX] = {
+            ...newPieces[fromY][fromX]!,
+            position: toPosition
+        };
         newPieces[fromY][fromX] = null;
 
-        const nextPlayer = getNextPlayer(currentPlayer);
+        const nextPlayer = getNextPlayer(currentPlayer, players);
 
-        const { check, checkmate } = getCheckStatus(
+        const { checksInProgress, checkmatedPlayers } = getCheckStatus(
             newPieces,
-            newKings,
             nextPlayer,
             {
                 ...boardState,
                 pieces: newPieces,
-                kings: newKings,
                 currentPlayer: nextPlayer,
                 moveHistory: newMoveHistory
             }
         );
 
         setBoardState({
+            ...boardState,
             pieces: newPieces,
             selectedTile: null,
             possibleMoves: [],
             currentPlayer: nextPlayer,
-            kings: newKings,
-            check,
-            checkmate,
+            checksInProgress,
+            checkmatedPlayers,
             moveHistory: newMoveHistory,
-            lastMove: {
-                from: { x: fromX, y: fromY },
-                to: { x: toX, y: toY }
-            },
             promotion: {
                 active: false,
                 position: null,

@@ -1,28 +1,29 @@
-import {BoardState} from "@/types/BoardState.ts";
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {calculatePawnMoves} from "@/utils/MoveUtilities/calculatePawnMoves.ts";
-import {calculateKnightMoves} from "@/utils/MoveUtilities/calculateKnightMoves.ts";
-import {calculateBishopMoves} from "@/utils/MoveUtilities/calculateBishopMoves.ts";
-import {calculateRookMoves} from "@/utils/MoveUtilities/calculateRookMoves.ts";
-import {calculateQueenMoves} from "@/utils/MoveUtilities/calculateQueenMoves.ts";
-import {calculateKingMoves} from "@/utils/MoveUtilities/calcualteKingMoves.ts";
-import {Piece} from "@/enums/Piece.ts";
+import { BoardState } from "@/types/BoardState.ts";
+import { ChessPiece } from "@/types/ChessPiece.ts";
+import { calculatePawnMoves } from "@/utils/MoveUtilities/calculatePawnMoves.ts";
+import { calculateKnightMoves } from "@/utils/MoveUtilities/calculateKnightMoves.ts";
+import { calculateBishopMoves } from "@/utils/MoveUtilities/calculateBishopMoves.ts";
+import { calculateRookMoves } from "@/utils/MoveUtilities/calculateRookMoves.ts";
+import { calculateQueenMoves } from "@/utils/MoveUtilities/calculateQueenMoves.ts";
+import { calculateKingMoves } from "@/utils/MoveUtilities/calcualteKingMoves.ts";
+import { Piece } from "@/enums/Piece.ts";
+import { Position } from "@/types/Position.ts";
 
 export const calculatePossibleMoves = (
     x: number,
     y: number,
     pieces: (ChessPiece | null)[][],
     boardState: BoardState
-): { x: number, y: number }[] => {
+): Position[] => {
     const piece = pieces[y][x];
     if (!piece) return [];
 
     const { color, type } = piece;
-    const { moveHistory } = boardState;
+    const { moveHistory, players } = boardState;
 
     switch (type) {
         case Piece.Pawn:
-            return calculatePawnMoves(x, y, pieces, color, moveHistory);
+            return calculatePawnMoves(x, y, pieces, color, moveHistory, players);
         case Piece.Knight:
             return calculateKnightMoves(x, y, pieces, color);
         case Piece.Bishop:

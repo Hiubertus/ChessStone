@@ -13,29 +13,47 @@ export const getCastlingMoves = (
     boardState: BoardState
 ): Position[] => {
     const castlingMoves: Position[] = [];
-    const { check } = boardState;
+    const { checksInProgress, players } = boardState;
     const king = pieces[kingY][kingX];
 
-    if (check === color || !king || king.hasMoved) return castlingMoves;
+    if (checksInProgress.includes(color) || !king || king.hasMoved) return castlingMoves;
 
-    const backRank = color === Color.White ? 7 : 0;
+    const playerConfig = players.find(player => player.color === color);
+    if (!playerConfig) return castlingMoves;
+
+    let backRank: number;
+    const direction = playerConfig.pawnDirection;
+
+    const maxY = Math.max(...boardState.boardLayout.map(pos => pos.y));
+    const minY = Math.min(...boardState.boardLayout.map(pos => pos.y));
+
+    if (direction.dy < 0) {
+        backRank = maxY;
+    } else if (direction.dy > 0) {
+        backRank = minY;
+    } else if (direction.dx < 0) {
+        backRank = kingY;
+    } else {
+        backRank = kingY;
+    }
 
     if (kingY !== backRank) return castlingMoves;
 
-    const rooksOnBackRank: { x: number, piece: ChessPiece }[] = [];
+    const rooksOnSameRank: { x: number, piece: ChessPiece }[] = [];
 
-    for (let x = 0; x < 8; x++) {
+    for (let x = 0; x < pieces[backRank].length; x++) {
         const piece = pieces[backRank][x];
         if (piece && piece.type === Piece.Rook && piece.color === color && !piece.hasMoved) {
-            rooksOnBackRank.push({ x, piece });
+            rooksOnSameRank.push({ x, piece });
         }
     }
 
-    const kingsideRooks = rooksOnBackRank.filter(rook => rook.x > kingX);
+    const kingsideRooks = rooksOnSameRank.filter(rook => rook.x > kingX);
     if (kingsideRooks.length > 0) {
-        const closestKingsideRook = kingsideRooks.reduce((closest, current) =>
-                current.x < closest.x ? current : closest
-            , kingsideRooks[0]);
+        const closestKingsideRook = kingsideRooks.reduce(
+            (closest, current) => current.x < closest.x ? current : closest,
+            kingsideRooks[0]
+        );
 
         let pathClear = true;
         for (let x = kingX + 1; x < closestKingsideRook.x; x++) {
@@ -45,11 +63,11 @@ export const getCastlingMoves = (
             }
         }
 
-        const kingsideCastleX = 6;
+        const kingsideCastleX = kingX + 2;
         let pathSafe = true;
 
         for (let x = kingX + 1; x <= kingsideCastleX; x++) {
-            if (isKingInCheck(x, backRank, color, pieces)) {
+            if (isKingInCheck(x, backRank, color, pieces, players)) {
                 pathSafe = false;
                 break;
             }
@@ -60,12 +78,13 @@ export const getCastlingMoves = (
         }
     }
 
-    const queensideRooks = rooksOnBackRank.filter(rook => rook.x < kingX);
+    // Handle queenside castling (rooks to the left of the king)
+    const queensideRooks = rooksOnSameRank.filter(rook => rook.x < kingX);
     if (queensideRooks.length > 0) {
-        // Use the closest rook to the king
-        const closestQueensideRook = queensideRooks.reduce((closest, current) =>
-                current.x > closest.x ? current : closest
-            , queensideRooks[0]);
+        const closestQueensideRook = queensideRooks.reduce(
+            (closest, current) => current.x > closest.x ? current : closest,
+            queensideRooks[0]
+        );
 
         let pathClear = true;
         for (let x = kingX - 1; x > closestQueensideRook.x; x--) {
@@ -75,11 +94,11 @@ export const getCastlingMoves = (
             }
         }
 
-        const queensideCastleX = 2;
+        const queensideCastleX = kingX - 2;
         let pathSafe = true;
 
         for (let x = kingX - 1; x >= queensideCastleX; x--) {
-            if (isKingInCheck(x, backRank, color, pieces)) {
+            if (isKingInCheck(x, backRank, color, pieces, players)) {
                 pathSafe = false;
                 break;
             }
