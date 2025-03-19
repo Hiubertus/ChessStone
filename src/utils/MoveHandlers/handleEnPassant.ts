@@ -1,32 +1,39 @@
-import {Position} from "@/types/Position.ts";
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {Color} from "@/enums/Color.ts";
-import {PlayerConfig} from "@/types/BoardConfig.ts";
+import { Color } from '@/enums';
+import { ChessPiece, PlayerConfig, Position } from '@/types';
 
-export const handleEnPassant = (
-    pieces: (ChessPiece | null)[][],
-    toX: number,
-    toY: number,
-    color: Color,
-    enPassantTarget: Position | null,
-    players: PlayerConfig[]
-): { pieces: (ChessPiece | null)[][], isEnPassant: boolean } => {
-    if (!enPassantTarget) return { pieces, isEnPassant: false };
+type Props = {
+  pieces: (ChessPiece | null)[][];
+  toX: number;
+  toY: number;
+  color: Color;
+  enPassantTarget: Position | null;
+  players: PlayerConfig[];
+};
 
-    const isEnPassant = enPassantTarget.x === toX && enPassantTarget.y === toY;
+export const handleEnPassant = ({
+  pieces,
+  players,
+  color,
+  enPassantTarget,
+  toX,
+  toY,
+}: Props): { pieces: (ChessPiece | null)[][]; isEnPassant: boolean } => {
+  if (!enPassantTarget) return { pieces, isEnPassant: false };
 
-    if (isEnPassant) {
-        const playerConfig = players.find(player => player.color === color);
-        if (!playerConfig) return { pieces, isEnPassant: false };
+  const isEnPassant = enPassantTarget.x === toX && enPassantTarget.y === toY;
 
-        const direction = playerConfig.pawnDirection;
+  if (isEnPassant) {
+    const playerConfig = players.find(player => player.color === color);
+    if (!playerConfig) return { pieces, isEnPassant: false };
 
-        const capturedPawnX = toX;
-        const capturedPawnY = toY - direction.dy;
+    const direction = playerConfig.pawnDirection;
 
-        pieces[capturedPawnY][capturedPawnX] = null;
-        return { pieces, isEnPassant: true };
-    }
+    const capturedPawnX = toX;
+    const capturedPawnY = toY - direction.dy;
 
-    return { pieces, isEnPassant: false };
+    pieces[capturedPawnY][capturedPawnX] = null;
+    return { pieces, isEnPassant: true };
+  }
+
+  return { pieces, isEnPassant: false };
 };

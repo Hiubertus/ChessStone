@@ -1,29 +1,37 @@
-import {Direction} from "@/types/Direction.ts";
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {isValidPosition} from "@/utils/BoardUtilities/isValidPosition.ts";
-import {Color} from "@/enums/Color.ts";
-import {Position} from "@/types/Position.ts";
+import { Color } from '@/enums';
+import { ChessPiece, Direction, Position } from '@/types';
+import { isValidPosition } from '@/utils';
 
-export const getFixedDistanceMoves = (
-    startX: number,
-    startY: number,
-    directions: Direction[],
-    pieces: (ChessPiece | null)[][],
-    pieceColor: Color
-): Position[] => {
-    const moves: Position[] = [];
+type Props = {
+  startX: number;
+  startY: number;
+  directions: Direction[];
+  pieces: (ChessPiece | null)[][];
+  pieceColor: Color;
+  boardLayout: Position[];
+};
 
-    for (const dir of directions) {
-        const newX = startX + dir.dx;
-        const newY = startY + dir.dy;
+export const getFixedDistanceMoves = ({
+  startX,
+  boardLayout,
+  startY,
+  pieces,
+  pieceColor,
+  directions,
+}: Props): Position[] => {
+  const moves: Position[] = [];
 
-        if (isValidPosition(newX, newY)) {
-            const targetPiece = pieces[newY][newX];
-            if (!targetPiece || targetPiece.color !== pieceColor) {
-                moves.push({ x: newX, y: newY });
-            }
-        }
+  for (const dir of directions) {
+    const newX = startX + dir.dx;
+    const newY = startY + dir.dy;
+
+    if (isValidPosition({ x: newX, y: newY, boardLayout })) {
+      const targetPiece = pieces[newY][newX];
+      if (!targetPiece || targetPiece.color !== pieceColor) {
+        moves.push({ x: newX, y: newY });
+      }
     }
+  }
 
-    return moves;
+  return moves;
 };

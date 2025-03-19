@@ -1,23 +1,42 @@
-import {calculateLegalMoves} from "@/utils/CheckUtilities/calculateLegalMoves.ts";
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {BoardState} from "@/types/BoardState.ts";
-import {Color} from "@/enums/Color.ts";
+import { Color } from '@/enums';
+import { ChessPiece, MoveHistory, PlayerConfig, Position } from '@/types';
+import { calculateLegalMoves } from '@/utils';
 
-export const playerHasLegalMoves = (
-    player: Color,
-    pieces: (ChessPiece | null)[][],
-    boardState: BoardState
-): boolean => {
-    for (let y = 0; y < 8; y++) {
-        for (let x = 0; x < 8; x++) {
-            const piece = pieces[y][x];
-            if (piece && piece.color === player) {
-                const legalMoves = calculateLegalMoves(x, y, pieces, boardState);
-                if (legalMoves.length > 0) {
-                    return true;
-                }
-            }
+type Props = {
+  player: Color;
+  pieces: (ChessPiece | null)[][];
+  moveHistory: MoveHistory[];
+  players: PlayerConfig[];
+  boardLayout: Position[];
+  checksInProgress: Color[];
+};
+
+export const playerHasLegalMoves = ({
+  players,
+  player,
+  pieces,
+  moveHistory,
+  boardLayout,
+  checksInProgress,
+}: Props): boolean => {
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
+      const piece = pieces[y][x];
+      if (piece && piece.color === player) {
+        const legalMoves = calculateLegalMoves({
+          x,
+          y,
+          pieces,
+          moveHistory,
+          players,
+          boardLayout,
+          checksInProgress,
+        });
+        if (legalMoves.length > 0) {
+          return true;
         }
+      }
     }
-    return false;
+  }
+  return false;
 };

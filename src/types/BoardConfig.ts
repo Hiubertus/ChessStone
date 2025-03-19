@@ -1,15 +1,9 @@
-import { Color } from "@/enums/Color.ts";
-import { Position } from "@/types/Position.ts";
-import { ChessPiece } from "@/types/ChessPiece.ts";
-import { Direction } from "@/types/Direction.ts";
-
-export type PlayerConfig = {
-    color: Color;
-    pawnDirection: Direction;
-};
+import { ChessPiece } from '@/types/ChessPiece.ts';
+import { PlayerConfig } from '@/types/PlayerConfig.ts';
+import { Position } from '@/types/Position.ts';
 
 export type BoardConfig = {
-    allowedPositions: Position[];
-    initialPieces: ChessPiece[];
-    players: PlayerConfig[];
+  allowedPositions: Position[];
+  initialPieces: ChessPiece[];
+  players: PlayerConfig[];
 };

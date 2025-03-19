@@ -1,40 +1,68 @@
-import { BoardState } from "@/types/BoardState.ts";
-import { ChessPiece } from "@/types/ChessPiece.ts";
-import { calculatePawnMoves } from "@/utils/MoveUtilities/calculatePawnMoves.ts";
-import { calculateKnightMoves } from "@/utils/MoveUtilities/calculateKnightMoves.ts";
-import { calculateBishopMoves } from "@/utils/MoveUtilities/calculateBishopMoves.ts";
-import { calculateRookMoves } from "@/utils/MoveUtilities/calculateRookMoves.ts";
-import { calculateQueenMoves } from "@/utils/MoveUtilities/calculateQueenMoves.ts";
-import { calculateKingMoves } from "@/utils/MoveUtilities/calcualteKingMoves.ts";
-import { Piece } from "@/enums/Piece.ts";
-import { Position } from "@/types/Position.ts";
+import { Color, Piece } from '@/enums';
+import { ChessPiece, MoveHistory, PlayerConfig, Position } from '@/types';
+import {
+  calculateBishopMoves,
+  calculateKingMoves,
+  calculateKnightMoves,
+  calculatePawnMoves,
+  calculateQueenMoves,
+  calculateRookMoves,
+} from '@/utils';
 
-export const calculatePossibleMoves = (
-    x: number,
-    y: number,
-    pieces: (ChessPiece | null)[][],
-    boardState: BoardState
-): Position[] => {
-    const piece = pieces[y][x];
-    if (!piece) return [];
+type Props = {
+  x: number;
+  y: number;
+  pieces: (ChessPiece | null)[][];
+  moveHistory: MoveHistory[];
+  players: PlayerConfig[];
+  boardLayout: Position[];
+  checksInProgress: Color[];
+};
 
-    const { color, type } = piece;
-    const { moveHistory, players } = boardState;
+export const calculatePossibleMoves = ({
+  x,
+  y,
+  pieces,
+  boardLayout,
+  players,
+  checksInProgress,
+  moveHistory,
+}: Props): Position[] => {
+  const piece = pieces[y][x];
+  if (!piece) return [];
 
-    switch (type) {
-        case Piece.Pawn:
-            return calculatePawnMoves(x, y, pieces, color, moveHistory, players);
-        case Piece.Knight:
-            return calculateKnightMoves(x, y, pieces, color);
-        case Piece.Bishop:
-            return calculateBishopMoves(x, y, pieces, color);
-        case Piece.Rook:
-            return calculateRookMoves(x, y, pieces, color);
-        case Piece.Queen:
-            return calculateQueenMoves(x, y, pieces, color);
-        case Piece.King:
-            return calculateKingMoves(x, y, pieces, color, boardState);
-        default:
-            return [];
-    }
+  const { color, type } = piece;
+
+  switch (type) {
+    case Piece.Pawn:
+      return calculatePawnMoves({
+        x,
+        y,
+        pieces,
+        color,
+        moveHistory,
+        players,
+        boardLayout,
+      });
+    case Piece.Knight:
+      return calculateKnightMoves({ x, y, pieces, color, boardLayout });
+    case Piece.Bishop:
+      return calculateBishopMoves({ x, y, pieces, color, boardLayout });
+    case Piece.Rook:
+      return calculateRookMoves({ x, y, pieces, color, boardLayout });
+    case Piece.Queen:
+      return calculateQueenMoves({ x, y, pieces, color, boardLayout });
+    case Piece.King:
+      return calculateKingMoves({
+        x,
+        y,
+        pieces,
+        color,
+        checksInProgress,
+        players,
+        boardLayout,
+      });
+    default:
+      return [];
+  }
 };

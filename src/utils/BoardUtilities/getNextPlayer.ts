@@ -1,14 +1,19 @@
-import {Color} from "@/enums/Color.ts";
-import {PlayerConfig} from "@/types/BoardConfig.ts";
+import { Color } from '@/enums';
+import { PlayerConfig } from '@/types';
 
-export const getNextPlayer = (currentPlayer: Color, players: PlayerConfig[]): Color => {
-    const playerColors = players.map(player => player.color);
-    const currentIndex = playerColors.indexOf(currentPlayer);
+type Props = {
+  currentPlayer: Color;
+  players: PlayerConfig[];
+};
 
-    if (currentIndex === -1) {
-        return playerColors[0];
-    }
+export const getNextPlayer = ({ currentPlayer, players }: Props): Color => {
+  const playerColors = players.map(player => player.color);
+  const currentIndex = playerColors.indexOf(currentPlayer);
 
-    const nextIndex = (currentIndex + 1) % playerColors.length;
-    return playerColors[nextIndex];
+  if (currentIndex === -1) {
+    return playerColors[0];
+  }
+
+  const nextIndex = (currentIndex + 1) % playerColors.length;
+  return playerColors[nextIndex];
 };

@@ -1,38 +1,46 @@
-import {isValidPosition} from "@/utils/BoardUtilities/isValidPosition.ts";
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {Direction} from "@/types/Direction.ts";
-import {Color} from "@/enums/Color.ts";
-import {Position} from "@/types/Position.ts";
+import { Color } from '@/enums';
+import { ChessPiece, Direction, Position } from '@/types';
+import { isValidPosition } from '@/utils';
 
-export const getMovesInDirection = (
-    startX: number,
-    startY: number,
-    directions: Direction[],
-    pieces: (ChessPiece | null)[][],
-    pieceColor: Color
-): Position[] => {
-    const moves: Position[] = [];
+type Props = {
+  startX: number;
+  startY: number;
+  directions: Direction[];
+  pieces: (ChessPiece | null)[][];
+  pieceColor: Color;
+  boardLayout: Position[];
+};
 
-    for (const dir of directions) {
-        let newX = startX + dir.dx;
-        let newY = startY + dir.dy;
+export const getMovesInDirection = ({
+  startX,
+  startY,
+  directions,
+  pieces,
+  pieceColor,
+  boardLayout,
+}: Props): Position[] => {
+  const moves: Position[] = [];
 
-        while (isValidPosition(newX, newY)) {
-            const targetPiece = pieces[newY][newX];
+  for (const dir of directions) {
+    let newX = startX + dir.dx;
+    let newY = startY + dir.dy;
 
-            if (!targetPiece) {
-                moves.push({ x: newX, y: newY });
-            } else {
-                if (targetPiece.color !== pieceColor) {
-                    moves.push({ x: newX, y: newY });
-                }
-                break;
-            }
+    while (isValidPosition({ x: newX, y: newY, boardLayout })) {
+      const targetPiece = pieces[newY][newX];
 
-            newX += dir.dx;
-            newY += dir.dy;
+      if (!targetPiece) {
+        moves.push({ x: newX, y: newY });
+      } else {
+        if (targetPiece.color !== pieceColor) {
+          moves.push({ x: newX, y: newY });
         }
-    }
+        break;
+      }
 
-    return moves;
+      newX += dir.dx;
+      newY += dir.dy;
+    }
+  }
+
+  return moves;
 };

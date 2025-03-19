@@ -1,8 +1,8 @@
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {Position} from "@/types/Position.ts";
+import { ChessPiece } from '@/types/ChessPiece.ts';
+import { Position } from '@/types/Position.ts';
 
 export type MoveHistory = {
-    piece: ChessPiece;
-    from: Position;
-    to: Position;
-}
+  piece: ChessPiece;
+  from: Position;
+  to: Position;
+};

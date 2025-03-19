@@ -1,26 +1,30 @@
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {BoardConfig} from "@/types/BoardConfig.ts";
+import { BoardConfig, ChessPiece } from '@/types';
 
-export const initializeBoard = (config: BoardConfig): (ChessPiece | null)[][] => {
-    let maxRow = 0;
-    let maxCol = 0;
+type Props = {
+  config: BoardConfig;
+};
 
-    config.allowedPositions.forEach(pos => {
-        maxRow = Math.max(maxRow, pos.y);
-        maxCol = Math.max(maxCol, pos.x);
-    });
+export const initializeBoard = ({ config }: Props): (ChessPiece | null)[][] => {
+  let maxRow = 0;
+  let maxCol = 0;
 
-    const board: (ChessPiece | null)[][] = Array(maxRow + 1).fill(null)
-        .map(() => Array(maxCol + 1).fill(null));
+  config.allowedPositions.forEach(pos => {
+    maxRow = Math.max(maxRow, pos.y);
+    maxCol = Math.max(maxCol, pos.x);
+  });
 
-    config.initialPieces.forEach(piece => {
-        const { position } = piece;
-        const { x, y } = position;
+  const board: (ChessPiece | null)[][] = Array(maxRow + 1)
+    .fill(null)
+    .map(() => Array(maxCol + 1).fill(null));
 
-        board[y][x] = {
-            ...piece
-        };
-    });
+  config.initialPieces.forEach(piece => {
+    const { position } = piece;
+    const { x, y } = position;
 
-    return board;
+    board[y][x] = {
+      ...piece,
+    };
+  });
+
+  return board;
 };

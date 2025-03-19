@@ -1,5 +1,9 @@
-import {ChessPiece} from "@/types/ChessPiece.ts";
+import { ChessPiece } from '@/types';
 
-export const clonePieces = (pieces: (ChessPiece | null)[][]): (ChessPiece | null)[][] => {
-    return pieces.map(row => [...row]);
+type Props = {
+  pieces: (ChessPiece | null)[][];
+};
+
+export const clonePieces = ({ pieces }: Props): (ChessPiece | null)[][] => {
+  return pieces.map(row => [...row]);
 };

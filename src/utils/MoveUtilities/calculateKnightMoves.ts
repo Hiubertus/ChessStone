@@ -1,13 +1,23 @@
-import {getFixedDistanceMoves} from "@/utils/BoardUtilities/getFixedDistanceMoves.ts";
-import {DIRECTION} from "@/constants/constants.ts";
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {Color} from "@/enums/Color.ts";
+import { DIRECTION } from '@/constants';
+import { Color } from '@/enums';
+import { ChessPiece, Position } from '@/types';
+import { getFixedDistanceMoves } from '@/utils';
 
-export const calculateKnightMoves = (
-    x: number,
-    y: number,
-    pieces: (ChessPiece | null)[][],
-    color: Color
-): { x: number, y: number }[] => {
-    return getFixedDistanceMoves(x, y, DIRECTION.KNIGHT, pieces, color);
+type Props = {
+  x: number;
+  y: number;
+  pieces: (ChessPiece | null)[][];
+  color: Color;
+  boardLayout: Position[];
+};
+
+export const calculateKnightMoves = ({ x, y, boardLayout, color, pieces }: Props): Position[] => {
+  return getFixedDistanceMoves({
+    startX: x,
+    startY: y,
+    directions: DIRECTION.KNIGHT,
+    pieces,
+    pieceColor: color,
+    boardLayout,
+  });
 };

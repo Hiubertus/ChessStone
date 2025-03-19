@@ -1,14 +1,23 @@
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {getMovesInDirection} from "@/utils/BoardUtilities/getMovesInDirection.ts";
-import {DIRECTION} from "@/constants/constants.ts";
-import {Color} from "@/enums/Color.ts";
-import {Position} from "@/types/Position.ts";
+import { DIRECTION } from '@/constants';
+import { Color } from '@/enums';
+import { ChessPiece, Position } from '@/types';
+import { getMovesInDirection } from '@/utils';
 
-export const calculateRookMoves = (
-    x: number,
-    y: number,
-    pieces: (ChessPiece | null)[][],
-    color: Color
-): Position[] => {
-    return getMovesInDirection(x, y, DIRECTION.ORTHOGONAL, pieces, color);
+type Props = {
+  x: number;
+  y: number;
+  pieces: (ChessPiece | null)[][];
+  color: Color;
+  boardLayout: Position[];
+};
+
+export const calculateRookMoves = ({ x, y, boardLayout, color, pieces }: Props): Position[] => {
+  return getMovesInDirection({
+    startX: x,
+    startY: y,
+    directions: DIRECTION.ORTHOGONAL,
+    pieces,
+    pieceColor: color,
+    boardLayout,
+  });
 };

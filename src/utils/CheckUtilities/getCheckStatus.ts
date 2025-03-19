@@ -1,49 +1,65 @@
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {BoardState} from "@/types/BoardState.ts";
-import {isKingInCheck} from "@/utils/CheckUtilities/isKingInCheck.ts";
-import {playerHasLegalMoves} from "@/utils/CheckUtilities/playerHasLegalMoves.ts";
-import {Color} from "@/enums/Color.ts";
-import {Piece} from "@/enums/Piece.ts";
+import { Color, Piece } from '@/enums';
+import { ChessPiece, MoveHistory, PlayerConfig, Position } from '@/types';
+import { isKingInCheck, playerHasLegalMoves } from '@/utils';
 
-export const getCheckStatus = (
-    pieces: (ChessPiece | null)[][],
-    currentPlayer: Color,
-    boardState: BoardState
-): { checksInProgress: Color[], checkmatedPlayers: Color[] } => {
-    const checksInProgress: Color[] = [];
-    const allPieces: ChessPiece[] = [];
+type Props = {
+  pieces: (ChessPiece | null)[][];
+  moveHistory: MoveHistory[];
+  players: PlayerConfig[];
+  boardLayout: Position[];
+};
 
-    for (let y = 0; y < pieces.length; y++) {
-        for (let x = 0; x < pieces[y].length; x++) {
-            if (pieces[y][x]) {
-                allPieces.push(pieces[y][x]!);
-            }
-        }
+export const getCheckStatus = ({
+  pieces,
+  boardLayout,
+  players,
+  moveHistory,
+}: Props): { checksInProgress: Color[]; checkmatedPlayers: Color[] } => {
+  const checksInProgress: Color[] = [];
+  const allPieces: ChessPiece[] = [];
+
+  for (let y = 0; y < pieces.length; y++) {
+    for (let x = 0; x < pieces[y].length; x++) {
+      if (pieces[y][x]) {
+        allPieces.push(pieces[y][x]!);
+      }
     }
+  }
 
-    const kings = allPieces.filter(piece => piece.type === Piece.King);
+  const kings = allPieces.filter(piece => piece.type === Piece.King);
 
-    for (const king of kings) {
-        const { x, y } = king.position;
-        if (isKingInCheck(x, y, king.color, pieces, boardState.players)) {
-            checksInProgress.push(king.color);
-        }
+  for (const king of kings) {
+    const { x, y } = king.position;
+    if (
+      isKingInCheck({
+        kingX: x,
+        kingY: y,
+        kingColor: king.color,
+        pieces,
+        players,
+        boardLayout,
+      })
+    ) {
+      checksInProgress.push(king.color);
     }
+  }
 
-    const checkmatedPlayers: Color[] = [];
+  const checkmatedPlayers: Color[] = [];
 
-    for (const color of checksInProgress) {
-        const hasLegalMoves = playerHasLegalMoves(color, pieces, {
-            ...boardState,
-            pieces,
-            currentPlayer,
-            checksInProgress
-        });
+  for (const color of checksInProgress) {
+    const hasLegalMoves = playerHasLegalMoves({
+      player: color,
+      pieces,
+      moveHistory,
+      players,
+      boardLayout,
+      checksInProgress,
+    });
 
-        if (!hasLegalMoves) {
-            checkmatedPlayers.push(color);
-        }
+    if (!hasLegalMoves) {
+      checkmatedPlayers.push(color);
     }
+  }
 
-    return { checksInProgress, checkmatedPlayers };
+  return { checksInProgress, checkmatedPlayers };
 };

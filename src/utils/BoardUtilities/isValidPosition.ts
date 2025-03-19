@@ -1,3 +1,11 @@
-export const isValidPosition = (x: number, y: number): boolean => {
-    return x >= 0 && x < 8 && y >= 0 && y < 8;
+import { Position } from '@/types';
+
+type Props = {
+  x: number;
+  y: number;
+  boardLayout: Position[];
+};
+
+export const isValidPosition = ({ x, y, boardLayout }: Props): boolean => {
+  return boardLayout.some(pos => pos.x === x && pos.y === y);
 };

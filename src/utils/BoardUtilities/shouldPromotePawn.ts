@@ -1,64 +1,77 @@
-import { ChessPiece } from "@/types/ChessPiece.ts";
-import { Piece } from "@/enums/Piece.ts";
-import { BoardState } from "@/types/BoardState.ts";
-import { Position } from "@/types/Position.ts";
+import { Piece } from '@/enums';
+import { ChessPiece, PlayerConfig, Position } from '@/types';
 
-export const shouldPromotePawn = (
-    piece: ChessPiece,
-    position: Position,
-    boardState: BoardState
-): boolean => {
-    if (piece.type !== Piece.Pawn) return false;
+type PromotePawnsProps = {
+  piece: ChessPiece;
+  position: Position;
+  boardLayout: Position[];
+  players: PlayerConfig[];
+};
 
-    const promotionPositions = getPromotionPositions(boardState);
+export const shouldPromotePawn = ({
+  piece,
+  boardLayout,
+  players,
+  position,
+}: PromotePawnsProps): boolean => {
+  if (piece.type !== Piece.Pawn) return false;
 
-    return promotionPositions.some(pos =>
-        pos.x === position.x && pos.y === position.y && pos.color === piece.color
-    );
+  const promotionPositions = getPromotionPositions({ boardLayout, players });
+
+  return promotionPositions.some(
+    pos => pos.x === position.x && pos.y === position.y && pos.color === piece.color,
+  );
 };
 
 type PromotionPosition = Position & { color: ChessPiece['color'] };
 
-const getPromotionPositions = (boardState: BoardState): PromotionPosition[] => {
-    const { boardLayout, players } = boardState;
-    const result: PromotionPosition[] = [];
+type PromotionPositionProps = {
+  boardLayout: Position[];
+  players: PlayerConfig[];
+};
 
-    const maxX = Math.max(...boardLayout.map(pos => pos.x));
-    const maxY = Math.max(...boardLayout.map(pos => pos.y));
-    const minX = Math.min(...boardLayout.map(pos => pos.x));
-    const minY = Math.min(...boardLayout.map(pos => pos.y));
+const getPromotionPositions = ({
+  boardLayout,
+  players,
+}: PromotionPositionProps): PromotionPosition[] => {
+  const result: PromotionPosition[] = [];
 
-    players.forEach(player => {
-        const direction = player.pawnDirection;
+  const maxX = Math.max(...boardLayout.map(pos => pos.x));
+  const maxY = Math.max(...boardLayout.map(pos => pos.y));
+  const minX = Math.min(...boardLayout.map(pos => pos.x));
+  const minY = Math.min(...boardLayout.map(pos => pos.y));
 
-        const promotionPositions: Position[] = [];
+  players.forEach(player => {
+    const direction = player.pawnDirection;
 
-        if (direction.dy < 0) {
-            for (let x = minX; x <= maxX; x++) {
-                promotionPositions.push({ x, y: minY });
-            }
-        } else if (direction.dy > 0) {
-            for (let x = minX; x <= maxX; x++) {
-                promotionPositions.push({ x, y: maxY });
-            }
-        } else if (direction.dx < 0) {
-            for (let y = minY; y <= maxY; y++) {
-                promotionPositions.push({ x: minX, y });
-            }
-        } else if (direction.dx > 0) {
-            for (let y = minY; y <= maxY; y++) {
-                promotionPositions.push({ x: maxX, y });
-            }
-        }
+    const promotionPositions: Position[] = [];
 
-        const validPromotionPositions = promotionPositions.filter(pos =>
-            boardLayout.some(boardPos => boardPos.x === pos.x && boardPos.y === pos.y)
-        );
+    if (direction.dy < 0) {
+      for (let x = minX; x <= maxX; x++) {
+        promotionPositions.push({ x, y: minY });
+      }
+    } else if (direction.dy > 0) {
+      for (let x = minX; x <= maxX; x++) {
+        promotionPositions.push({ x, y: maxY });
+      }
+    } else if (direction.dx < 0) {
+      for (let y = minY; y <= maxY; y++) {
+        promotionPositions.push({ x: minX, y });
+      }
+    } else if (direction.dx > 0) {
+      for (let y = minY; y <= maxY; y++) {
+        promotionPositions.push({ x: maxX, y });
+      }
+    }
 
-        validPromotionPositions.forEach(pos => {
-            result.push({ ...pos, color: player.color });
-        });
+    const validPromotionPositions = promotionPositions.filter(pos =>
+      boardLayout.some(boardPos => boardPos.x === pos.x && boardPos.y === pos.y),
+    );
+
+    validPromotionPositions.forEach(pos => {
+      result.push({ ...pos, color: player.color });
     });
+  });
 
-    return result;
+  return result;
 };

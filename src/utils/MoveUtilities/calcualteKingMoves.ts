@@ -1,20 +1,44 @@
-import {getFixedDistanceMoves} from "@/utils/BoardUtilities/getFixedDistanceMoves.ts";
-import {DIRECTION} from "@/constants/constants.ts";
-import {ChessPiece} from "@/types/ChessPiece.ts";
-import {BoardState} from "@/types/BoardState.ts";
-import {getCastlingMoves} from "@/utils/MoveUtilities/getCastlingMoves.ts";
-import {Color} from "@/enums/Color.ts";
-import {Position} from "@/types/Position.ts";
+import { DIRECTION } from '@/constants';
+import { Color } from '@/enums';
+import { ChessPiece, PlayerConfig, Position } from '@/types';
+import { getCastlingMoves, getFixedDistanceMoves } from '@/utils';
 
-export const calculateKingMoves = (
-    x: number,
-    y: number,
-    pieces: (ChessPiece | null)[][],
-    color: Color,
-    boardState: BoardState
-): { x: number, y: number }[] => {
-    const normalMoves: Position[] = getFixedDistanceMoves(x, y, DIRECTION.KING, pieces, color);
-    const castlingMoves: Position[] = getCastlingMoves(x, y, pieces, color, boardState);
+type Props = {
+  x: number;
+  y: number;
+  pieces: (ChessPiece | null)[][];
+  color: Color;
+  checksInProgress: Color[];
+  players: PlayerConfig[];
+  boardLayout: Position[];
+};
 
-    return [...normalMoves, ...castlingMoves];
+export const calculateKingMoves = ({
+  x,
+  y,
+  pieces,
+  players,
+  boardLayout,
+  checksInProgress,
+  color,
+}: Props): Position[] => {
+  const normalMoves: Position[] = getFixedDistanceMoves({
+    startX: x,
+    startY: y,
+    directions: DIRECTION.KING,
+    pieces,
+    pieceColor: color,
+    boardLayout,
+  });
+  const castlingMoves: Position[] = getCastlingMoves({
+    kingX: x,
+    kingY: y,
+    pieces,
+    color,
+    checksInProgress,
+    players,
+    boardLayout,
+  });
+
+  return [...normalMoves, ...castlingMoves];
 };
