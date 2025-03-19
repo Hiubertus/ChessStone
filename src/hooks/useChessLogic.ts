@@ -1,4 +1,4 @@
-import { Dispatch, SetStateAction } from 'react';
+import { Dispatch, SetStateAction, useCallback, useMemo } from 'react';
 
 import { Piece } from '@/enums';
 import { BoardState, ChessPiece, MoveHistory, Position } from '@/types';
@@ -10,7 +10,7 @@ import {
   getNextPlayer,
   handleCastling,
   handleEnPassant,
-  isMoveInPossibleMoves,
+  isValidPosition,
   shouldPromotePawn,
 } from '@/utils';
 
@@ -31,222 +31,269 @@ export const useChessLogic = ({ boardState, setBoardState }: Props) => {
     moveHistory,
     selectedTile,
     possibleMoves,
-  } = boardState;
+  } = useMemo(() => boardState, [boardState]);
 
-  const handlePromotion = (pieceType: ChessPiece['type']) => {
-    if (!promotion.pendingMove || !promotion.position || !promotion.color) return;
+  // Memoizujemy funkcję sprawdzającą, czy ruch jest w możliwych ruchach
+  const isMoveInPossibleMoves = useCallback(
+    ({ x, y, possibleMoves }: { x: number; y: number; possibleMoves: Position[] }): boolean => {
+      return isValidPosition({ x, y, boardLayout: possibleMoves });
+    },
+    [boardLayout],
+  );
 
-    const { from, to } = promotion.pendingMove;
-    const newPieces = clonePieces({ pieces });
+  // Memoizujemy handlePromotion, aby nie była tworzona na nowo przy każdym renderowaniu
+  const handlePromotion = useCallback(
+    (pieceType: ChessPiece['type']) => {
+      if (!promotion.pendingMove || !promotion.position || !promotion.color) return;
 
-    const id = `${promotion.color}_${pieceType}_promoted_${Date.now()}`;
+      const { from, to } = promotion.pendingMove;
+      const newPieces = clonePieces({ pieces });
 
-    newPieces[to.y][to.x] = {
-      id,
-      type: pieceType,
-      color: promotion.color,
-      hasMoved: true,
-      position: to,
-    };
+      const id = `${promotion.color}_${pieceType}_promoted_${Date.now()}`;
 
-    newPieces[from.y][from.x] = null;
-
-    const nextPlayer = getNextPlayer({ currentPlayer, players });
-
-    const moveRecord: MoveHistory = {
-      piece: {
+      newPieces[to.y][to.x] = {
         id,
         type: pieceType,
         color: promotion.color,
         hasMoved: true,
         position: to,
-      },
-      from,
-      to,
-    };
+      };
 
-    const newMoveHistory = [...boardState.moveHistory, moveRecord];
+      newPieces[from.y][from.x] = null;
 
-    const { checksInProgress, checkmatedPlayers } = getCheckStatus({
-      pieces: newPieces,
-      moveHistory,
+      const nextPlayer = getNextPlayer({ currentPlayer, players });
+
+      const moveRecord: MoveHistory = {
+        piece: {
+          id,
+          type: pieceType,
+          color: promotion.color,
+          hasMoved: true,
+          position: to,
+        },
+        from,
+        to,
+      };
+
+      const newMoveHistory = [...boardState.moveHistory, moveRecord];
+
+      const checkStatus = getCheckStatus({
+        pieces: newPieces,
+        moveHistory,
+        players,
+        boardLayout,
+      });
+
+      setBoardState({
+        ...boardState,
+        pieces: newPieces,
+        selectedTile: null,
+        possibleMoves: [],
+        currentPlayer: nextPlayer,
+        checksInProgress: checkStatus.checksInProgress,
+        checkmatedPlayers: checkStatus.checkmatedPlayers,
+        moveHistory: newMoveHistory,
+        promotion: {
+          active: false,
+          position: null,
+          color: null,
+          pendingMove: null,
+        },
+      });
+    },
+    [
+      boardState,
+      pieces,
+      promotion,
+      currentPlayer,
       players,
+      moveHistory,
       boardLayout,
-    });
+      setBoardState,
+    ],
+  );
 
-    setBoardState({
-      ...boardState,
-      pieces: newPieces,
-      selectedTile: null,
-      possibleMoves: [],
-      currentPlayer: nextPlayer,
-      checksInProgress,
-      checkmatedPlayers,
-      moveHistory: newMoveHistory,
-      promotion: {
-        active: false,
-        position: null,
-        color: null,
-        pendingMove: null,
-      },
-    });
-  };
+  // Memoizujemy executeMove, aby nie była tworzona na nowo przy każdym renderowaniu
+  const executeMove = useCallback(
+    (fromX: number, fromY: number, toX: number, toY: number) => {
+      const movingPiece = pieces[fromY][fromX]!;
 
-  const handleTileClick = (x: number, y: number) => {
-    if (promotion.active || checkmatedPlayers.includes(currentPlayer)) return;
+      let newPieces = clonePieces({ pieces });
 
-    const clickedPiece = pieces[y][x];
-
-    if (!selectedTile) {
-      if (clickedPiece && clickedPiece.color === currentPlayer) {
-        const possibleMoves = calculateLegalMoves({
-          x,
-          y,
-          pieces,
-          moveHistory,
-          players,
-          boardLayout,
-          checksInProgress,
-        });
-        setBoardState({
-          ...boardState,
-          selectedTile: { x, y },
-          possibleMoves,
-        });
+      if (newPieces[fromY][fromX]) {
+        newPieces[fromY][fromX]!.hasMoved = true;
       }
-    } else {
-      if (selectedTile.x === x && selectedTile.y === y) {
-        setBoardState({
-          ...boardState,
-          selectedTile: null,
-          possibleMoves: [],
-        });
-      } else if (isMoveInPossibleMoves({ x, y, possibleMoves })) {
-        executeMove(selectedTile.x, selectedTile.y, x, y);
-      } else if (clickedPiece && clickedPiece.color === currentPlayer) {
-        const possibleMoves = calculateLegalMoves({
-          x,
-          y,
-          pieces,
-          moveHistory,
-          players,
-          boardLayout,
-          checksInProgress,
-        });
-        setBoardState({
-          ...boardState,
-          selectedTile: { x, y },
-          possibleMoves,
-        });
-      }
-    }
-  };
 
-  const executeMove = (fromX: number, fromY: number, toX: number, toY: number) => {
-    const movingPiece = pieces[fromY][fromX]!;
+      const moveRecord: MoveHistory = {
+        piece: { ...movingPiece },
+        from: { x: fromX, y: fromY },
+        to: { x: toX, y: toY },
+      };
 
-    let newPieces = clonePieces({ pieces });
+      const newMoveHistory = [...moveHistory, moveRecord];
+      const toPosition: Position = { x: toX, y: toY };
 
-    if (newPieces[fromY][fromX]) {
-      newPieces[fromY][fromX]!.hasMoved = true;
-    }
-
-    const moveRecord: MoveHistory = {
-      piece: { ...movingPiece },
-      from: { x: fromX, y: fromY },
-      to: { x: toX, y: toY },
-    };
-
-    const newMoveHistory = [...moveHistory, moveRecord];
-    const toPosition: Position = { x: toX, y: toY };
-
-    switch (movingPiece.type) {
-      case Piece.Pawn: {
-        if (
-          shouldPromotePawn({
-            piece: movingPiece,
-            position: toPosition,
-            boardLayout,
-            players,
-          })
-        ) {
-          setBoardState({
-            ...boardState,
-            promotion: {
-              active: true,
+      switch (movingPiece.type) {
+        case Piece.Pawn: {
+          if (
+            shouldPromotePawn({
+              piece: movingPiece,
               position: toPosition,
-              color: currentPlayer,
-              pendingMove: {
-                from: { x: fromX, y: fromY },
-                to: toPosition,
+              boardLayout,
+              players,
+            })
+          ) {
+            setBoardState({
+              ...boardState,
+              promotion: {
+                active: true,
+                position: toPosition,
+                color: currentPlayer,
+                pendingMove: {
+                  from: { x: fromX, y: fromY },
+                  to: toPosition,
+                },
               },
-            },
+            });
+            return;
+          }
+
+          const enPassantTarget = getEnPassantTarget({ moveHistory, players });
+          const { pieces: updatedPieces } = handleEnPassant({
+            pieces: newPieces,
+            toX,
+            toY,
+            color: currentPlayer,
+            enPassantTarget,
+            players,
           });
-          return;
+          newPieces = updatedPieces;
+          break;
         }
 
-        const enPassantTarget = getEnPassantTarget({ moveHistory, players });
-        const { pieces: updatedPieces } = handleEnPassant({
-          pieces: newPieces,
-          toX,
-          toY,
-          color: currentPlayer,
-          enPassantTarget,
-          players,
-        });
-        newPieces = updatedPieces;
-        break;
+        case Piece.King:
+          newPieces = handleCastling({
+            pieces: newPieces,
+            fromX,
+            toX,
+            color: currentPlayer,
+          });
+          break;
+
+        default:
+          break;
       }
 
-      case Piece.King:
-        newPieces = handleCastling({
-          pieces: newPieces,
-          fromX,
-          toX,
-          color: currentPlayer,
-        });
-        break;
+      newPieces[toY][toX] = {
+        ...newPieces[fromY][fromX]!,
+        position: toPosition,
+      };
+      newPieces[fromY][fromX] = null;
 
-      default:
-        break;
-    }
+      const nextPlayer = getNextPlayer({ currentPlayer, players });
 
-    newPieces[toY][toX] = {
-      ...newPieces[fromY][fromX]!,
-      position: toPosition,
-    };
-    newPieces[fromY][fromX] = null;
+      const checkStatus = getCheckStatus({
+        pieces: newPieces,
+        moveHistory,
+        players,
+        boardLayout,
+      });
 
-    const nextPlayer = getNextPlayer({ currentPlayer, players });
+      setBoardState({
+        ...boardState,
+        pieces: newPieces,
+        selectedTile: null,
+        possibleMoves: [],
+        currentPlayer: nextPlayer,
+        checksInProgress: checkStatus.checksInProgress,
+        checkmatedPlayers: checkStatus.checkmatedPlayers,
+        moveHistory: newMoveHistory,
+        promotion: {
+          active: false,
+          position: null,
+          color: null,
+          pendingMove: null,
+        },
+      });
+    },
+    [pieces, moveHistory, boardLayout, players, currentPlayer, boardState, setBoardState],
+  );
 
-    const { checksInProgress, checkmatedPlayers } = getCheckStatus({
-      pieces: newPieces,
+  // Memoizujemy handleTileClick, aby nie była tworzona na nowo przy każdym renderowaniu
+  const handleTileClick = useCallback(
+    (x: number, y: number) => {
+      if (promotion.active || checkmatedPlayers.includes(currentPlayer)) return;
+
+      const clickedPiece = pieces[y][x];
+
+      if (!selectedTile) {
+        if (clickedPiece && clickedPiece.color === currentPlayer) {
+          const calculatedMoves = calculateLegalMoves({
+            x,
+            y,
+            pieces,
+            moveHistory,
+            players,
+            boardLayout,
+            checksInProgress,
+          });
+          setBoardState({
+            ...boardState,
+            selectedTile: { x, y },
+            possibleMoves: calculatedMoves,
+          });
+        }
+      } else {
+        if (selectedTile.x === x && selectedTile.y === y) {
+          setBoardState({
+            ...boardState,
+            selectedTile: null,
+            possibleMoves: [],
+          });
+        } else if (isMoveInPossibleMoves({ x, y, possibleMoves })) {
+          executeMove(selectedTile.x, selectedTile.y, x, y);
+        } else if (clickedPiece && clickedPiece.color === currentPlayer) {
+          const calculatedMoves = calculateLegalMoves({
+            x,
+            y,
+            pieces,
+            moveHistory,
+            players,
+            boardLayout,
+            checksInProgress,
+          });
+          setBoardState({
+            ...boardState,
+            selectedTile: { x, y },
+            possibleMoves: calculatedMoves,
+          });
+        }
+      }
+    },
+    [
+      promotion.active,
+      checkmatedPlayers,
+      currentPlayer,
+      pieces,
+      selectedTile,
       moveHistory,
       players,
       boardLayout,
-    });
-
-    setBoardState({
-      ...boardState,
-      pieces: newPieces,
-      selectedTile: null,
-      possibleMoves: [],
-      currentPlayer: nextPlayer,
       checksInProgress,
-      checkmatedPlayers,
-      moveHistory: newMoveHistory,
-      promotion: {
-        active: false,
-        position: null,
-        color: null,
-        pendingMove: null,
-      },
-    });
-  };
+      possibleMoves,
+      boardState,
+      setBoardState,
+      isMoveInPossibleMoves,
+      executeMove,
+    ],
+  );
 
-  return {
-    handleTileClick,
-    handlePromotion,
-    isMoveInPossibleMoves,
-  };
+  return useMemo(
+    () => ({
+      handleTileClick,
+      handlePromotion,
+      isMoveInPossibleMoves,
+    }),
+    [handleTileClick, handlePromotion, isMoveInPossibleMoves],
+  );
 };
